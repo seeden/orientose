@@ -1,11 +1,57 @@
 # Orientoose
 
 Orientoose is a OrientDB object modeling with support of schemas inspired by mongoose. 
-Some features of mongoose are used in simplified way. 
+Some features of mongoose are used in simplified way.
+
+## TR/TD:
+
+ * It is not production ready 
+
+
+## Create Connection
+
+	var Orientose = require('orientose');
+	var Schema = Orientose.Schema;
+
+	var connection = new Orientose({
+		host: 'localhost',
+		port: 2424,
+		username: 'root',
+		password: 'yourpassword'
+	}, 'mydb'); 
+
 
 ## Create Schema
 
+	var Orientose = require('orientose');
+	var Schema = Orientose.Schema;
+
+	var schema = new Schema({
+		name: { type: String }
+	});
+
+	schema.virtual('niceName').get(function() {
+		return 'Cool ' + this.name;
+	});
+
+
 ## Create Model
+
+	var User = connection.model('User', schema);
+
+
+## Create Document from Model
+
+	User.create({
+		name: 'Peter Max'
+	}, function(err, user) {
+		if(err) {
+			return console.log(err.message);
+		}
+
+		console.log(user.name);      //Peter Max
+		console.log(user.niceName);  // Cool Peter Max
+	});
 		
 ## Credits
 
