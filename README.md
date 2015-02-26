@@ -1,6 +1,6 @@
-# Orientoose
+# Orientose
 
-Orientoose is a OrientDB object modeling with support of schemas inspired by mongoose. 
+Orientose is a OrientDB object modeling with support of schemas inspired by mongoose. 
 Some features of mongoose are used in simplified way.
 
 ## TR/TD:
