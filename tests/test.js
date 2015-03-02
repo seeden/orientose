@@ -27,7 +27,17 @@ describe('Connection', function() {
 		schema = new Schema({
 			name    : { type: String, required: true },
 			isAdmin : { type: Boolean, default: false, readonly: true },
-			points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 }
+			points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
+			hooked  : { type: String },
+			address : {
+				city   : { type: String, default: 'Kosice' },
+				street : { type: String }
+			}
+		});
+
+		schema.pre('save', function(done) {
+			this.hooked = 'Hooked text';
+			done();
 		});
 
 		schema.virtual('niceName').get(function() {
@@ -71,6 +81,9 @@ describe('Connection', function() {
 	it('should be able to create a document', function(done) {
 		var user1 = new User({
 			name: 'Zlatko Fedor',
+			address: {
+				street: 'Huskova 19'
+			}
 		});
 
 		user1.name.should.equal('Zlatko Fedor');
@@ -88,10 +101,13 @@ describe('Connection', function() {
 				throw err;
 			}
 
+			userSaved.hooked.should.equal('Hooked text');
+
 			rid = userSaved.rid;
 			done();
 		});
 	});	
+
 
 	it('should be able to find a document', function(done) {
 		User.findByRid(rid, function(err, user) {
@@ -103,9 +119,49 @@ describe('Connection', function() {
 			user.isAdmin.should.equal(false);
 			user.points.should.equal(30);
 			user.niceName.should.equal('Mr. Zlatko Fedor');
+			user.hooked.should.equal('Hooked text');
 			user.rid.should.equal(rid);
+
+			user.address.street.should.equal('Huskova 19');
+			user.address.city.should.equal('Kosice');
 
 			done();
 		});
-	});		
+	});	
+
+	it('should be able to use toJSON', function(done) {
+		User.findByRid(rid, function(err, user) {
+			if(err) {
+				throw err;
+			}
+
+			var json = user.toJSON({
+				virtuals: true
+			});
+
+			json.name.should.equal('Zlatko Fedor');
+			json.isAdmin.should.equal(false);
+			json.points.should.equal(30);
+			json.niceName.should.equal('Mr. Zlatko Fedor');
+			json.hooked.should.equal('Hooked text');
+
+
+			json.address.street.should.equal('Huskova 19');
+			json.address.city.should.equal('Kosice');
+
+			done();
+		});
+	});	
+
+	it('should be able to remove a document', function(done) {
+		User.removeByRid(rid, function(err, total) {
+			if(err) {
+				throw err;
+			}
+
+			total.should.equal(1);
+
+			done();
+		});
+	});	
 });

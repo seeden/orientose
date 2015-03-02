@@ -38,11 +38,20 @@ Right know we have support only for schema-full.
 	var schema = new Schema({
 		name: { type: String, required: true },
 		isAdmin : { type: Boolean, default: false, readonly: true },
-		points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 }
+		points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
+		address : {
+			city   : { type: String },
+			street : { type: String } 
+		}
 	});
 
 	schema.virtual('niceName').get(function() {
 		return 'Cool ' + this.name;
+	});
+
+	schema.pre('save', function(done) {
+		this.address.city = 'Kosice';
+		done();
 	});
 
 	schema.plugin(geojson);
@@ -62,8 +71,9 @@ Right know we have support only for schema-full.
 			return console.log(err.message);
 		}
 
-		console.log(user.name);      //Peter Max
-		console.log(user.niceName);  // Cool Peter Max
+		user.name.should.equal('Peter Max');
+		user.niceName.should.equal('Cool Peter Max');
+		user.address.city.should.equal('Kosice'); //there is a pre save hook
 	});
 
 ### Model.findByRid
@@ -76,6 +86,24 @@ Finds a single document by rid.
 			affectedRows.should.equal(1);
 		});
 	});
+
+### Model.removeByRid
+Remove a single document by a documents rid.
+
+	User.removeByRid(rid, function(err, affectedRows) {
+		affectedRows.should.equal(1);
+	});	
+
+### Schema types
+If you need to use other types from orient you can use Orientose.Type
+
+	var Orientose = require('orientose');
+	var Schema = Orientose.Schema;
+
+	var schema = new Schema({
+		count  : { type: Orientose.Type.Integer },
+		count2 : { type: Orientose.Type.Long }
+	});	
 
 		
 ## Credits
