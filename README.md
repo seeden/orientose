@@ -2,6 +2,7 @@
 
 Orientose is a OrientDB object modeling with support of schemas inspired by mongoose. Some features of mongoose are used in simplified way. Orientose will create database structure for you automatically from your schema. 
 
+
 ## Features
  * Default values
  * Virtual computed properties
@@ -10,6 +11,9 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
  * Pre/post hooks for save, update, remove
  * Create db structure from your schema automatically
  * Plugins like in mongoose
+
+### TR|TD
+Right know we have support only for schema-full. 
 
 
 ## Create Connection
@@ -61,6 +65,18 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
 		console.log(user.name);      //Peter Max
 		console.log(user.niceName);  // Cool Peter Max
 	});
+
+### Model.findByRid
+Finds a single document by rid.
+
+	User.findByRid(rid, function(err, user) {
+		user.name = 'Luca';
+
+		user.save(function(err, affectedRows) {
+			affectedRows.should.equal(1);
+		});
+	});
+
 		
 ## Credits
 

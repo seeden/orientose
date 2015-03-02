@@ -21,6 +21,7 @@ describe('Schema', function() {
 describe('Connection', function() {
 	var schema = null;
 	var connection = null;
+	var User = null;
 
 	it('should be able to create a simple schema', function() {
 		schema = new Schema({
@@ -32,6 +33,14 @@ describe('Connection', function() {
 		schema.virtual('niceName').get(function() {
 			return 'Mr. ' + this.name;
 		});
+
+		schema.methods.getFormatedPoints = function() {
+			return 'Points: ' + this.points;
+		};
+
+		schema.statics.getStaticValue = function() {
+			return 'Static value';
+		};
 	});
 
 	it('should be able to create a connection', function() {
@@ -44,22 +53,59 @@ describe('Connection', function() {
 	});	
 
 	it('should be able to create a model', function(done) {
-		connection.model('User', schema, function(err, User) {
+		connection.model('User', schema, function(err, UserModel) {
 			if(err) {
 				throw err;
 			}
 
-			var user1 = new User({
-				name: 'Zlatko Fedor',
-			});
+			User = UserModel;
 
-			user1.name.should.equal('Zlatko Fedor');
-			user1.isNew.should.equal(true);
-			user1.isAdmin.should.equal(false);
-			user1.points.should.equal(30);
-			user1.niceName.should.equal('Mr. Zlatko Fedor');
+			User.getStaticValue().should.equal('Static value');
 
 			done();
 		});
 	});
+
+	var rid = null;
+
+	it('should be able to create a document', function(done) {
+		var user1 = new User({
+			name: 'Zlatko Fedor',
+		});
+
+		user1.name.should.equal('Zlatko Fedor');
+		user1.isAdmin.should.equal(false);
+		user1.points.should.equal(30);
+		user1.niceName.should.equal('Mr. Zlatko Fedor');
+
+		user1.getFormatedPoints().should.equal('Points: 30');
+
+		user1.isNew.should.equal(true);
+
+
+		user1.save(function(err, userSaved) {
+			if(err) {
+				throw err;
+			}
+
+			rid = userSaved.rid;
+			done();
+		});
+	});	
+
+	it('should be able to find a document', function(done) {
+		User.findByRid(rid, function(err, user) {
+			if(err) {
+				throw err;
+			}
+
+			user.name.should.equal('Zlatko Fedor');
+			user.isAdmin.should.equal(false);
+			user.points.should.equal(30);
+			user.niceName.should.equal('Mr. Zlatko Fedor');
+			user.rid.should.equal(rid);
+
+			done();
+		});
+	});		
 });
