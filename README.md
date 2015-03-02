@@ -9,6 +9,7 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
  * Extended validation (sync, async)
  * Pre/post hooks for save, update, remove
  * Create db structure from your schema automatically
+ * Plugins like in mongoose
 
 
 ## Create Connection
@@ -28,15 +29,19 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
 
 	var Orientose = require('orientose');
 	var Schema = Orientose.Schema;
+	var geojson = require('orientose-geojson');
 
 	var schema = new Schema({
 		name: { type: String, required: true },
-
+		isAdmin : { type: Boolean, default: false, readonly: true },
+		points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 }
 	});
 
 	schema.virtual('niceName').get(function() {
 		return 'Cool ' + this.name;
 	});
+
+	schema.plugin(geojson);
 
 
 ## Create Model
