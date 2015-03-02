@@ -28,6 +28,10 @@ describe('Connection', function() {
 			isAdmin : { type: Boolean, default: false, readonly: true },
 			points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 }
 		});
+
+		schema.virtual('niceName').get(function() {
+			return 'Mr. ' + this.name;
+		});
 	});
 
 	it('should be able to create a connection', function() {
@@ -53,6 +57,7 @@ describe('Connection', function() {
 			user1.isNew.should.equal(true);
 			user1.isAdmin.should.equal(false);
 			user1.points.should.equal(30);
+			user1.niceName.should.equal('Mr. Zlatko Fedor');
 
 			done();
 		});
