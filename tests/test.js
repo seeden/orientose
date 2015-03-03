@@ -71,7 +71,6 @@ describe('Connection', function() {
 			}
 
 			User = UserModel;
-
 			User.getStaticValue().should.equal('Static value');
 
 			done();
@@ -165,5 +164,39 @@ describe('Connection', function() {
 
 			done();
 		});
+	});	
+
+	it('should be able to get User model', function(done) {
+		var UserModel = connection.model('User');
+		UserModel.should.equal(User);
+		done();
+	});	
+
+	it('should be able to create model extended from V', function(done) {
+		var personSchema = new Schema({
+			name: { type: String }
+		}, {
+			extend: 'V'
+		});
+
+		var Person = connection.model('Person', personSchema, function(){
+			done();
+		});
+		
+		
+	});	
+
+	it('should be able to create model extended from V', function(done) {
+		var personSchema = new Schema({
+			omg: { type: String }
+		}, {
+			extend: 'Person'
+		});
+
+		var Person = connection.model('Person2', personSchema, function(){
+			done();
+		});
+		
+		
 	});	
 });
