@@ -32,11 +32,13 @@ describe('Connection', function() {
 			address : {
 				city   : { type: String, default: 'Kosice' },
 				street : { type: String }
-			}
+			},
+			tags    : [String]
 		});
 
 		schema.pre('save', function(done) {
 			this.hooked = 'Hooked text';
+			this.tags.push('Test');
 			done();
 		});
 
@@ -144,7 +146,7 @@ describe('Connection', function() {
 			json.points.should.equal(30);
 			json.niceName.should.equal('Mr. Zlatko Fedor');
 			json.hooked.should.equal('Hooked text');
-
+			json.tags.length.should.equal(1);
 
 			json.address.street.should.equal('Huskova 19');
 			json.address.city.should.equal('Kosice');

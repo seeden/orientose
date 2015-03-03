@@ -42,7 +42,8 @@ Right know we have support only for schema-full.
 		address : {
 			city   : { type: String },
 			street : { type: String } 
-		}
+		},
+		tags    : [String]
 	});
 
 	schema.virtual('niceName').get(function() {
@@ -51,6 +52,7 @@ Right know we have support only for schema-full.
 
 	schema.pre('save', function(done) {
 		this.address.city = 'Kosice';
+		this.tags.push('admin', 'people');
 		done();
 	});
 
@@ -74,6 +76,7 @@ Right know we have support only for schema-full.
 		user.name.should.equal('Peter Max');
 		user.niceName.should.equal('Cool Peter Max');
 		user.address.city.should.equal('Kosice'); //there is a pre save hook
+		user.tags.length.should.equal(2); //there is a pre save hook
 	});
 
 ### Model.findByRid

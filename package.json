@@ -1,6 +1,6 @@
 {
 	"name": "orientose",
-	"version": "0.1.4",
+	"version": "0.1.6",
 	"description": "OrientDB ODM with support for schemas inspired by mongoose",
 	"author": {
 		"name": "Zlatko Fedor",
@@ -9,7 +9,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git://github.com/seeden/orientoose.git"
+		"url": "git://github.com/seeden/orientose.git"
 	},
 	"keywords": [
 		"orient",
