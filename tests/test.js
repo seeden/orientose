@@ -222,7 +222,7 @@ describe('V', function() {
 describe('E', function() {	
 	it('should be able to create edge model extended from E', function(done) {
 		var followSchema = new Schema.E({
-			when: { type: Date, required: true }
+			when: { type: Date, default: Date.now, required: true }
 		}, {
 			unique: true
 		});
@@ -234,6 +234,8 @@ describe('E', function() {
 			done();
 		});
 	});	
+
+	var edge = null;
 
 	it('should be able to create edge beetwean two person', function(done) {
 		var Follow = connection.model('Follow');
@@ -260,17 +262,28 @@ describe('E', function() {
 			function(p1, p2, callback) {
 				new Follow({
 					from: p1,
-					to: p2,
-					when: new Date()
-				}).save(function(err, edge) {
+					to: p2
+				}).save(function(err, follow) {
 					if(err) {
 						return callback(err);
 					}
+
+					edge = follow;
 
 					callback(null);
 				});
 			}
 		], function(err) {
+			if(err) {
+				throw err;
+			}
+
+			done();
+		});
+	});	
+
+	it('should be able to remove edge', function(done) {
+		edge.remove(function(err) {
 			if(err) {
 				throw err;
 			}

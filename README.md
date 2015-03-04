@@ -94,6 +94,25 @@ User.create({
 });
 ```
 
+Alternative way with instance of document
+
+```js
+var user = new User({
+	name: 'Peter Max'
+});
+
+user.points = 45;
+
+user.save(function(err, user) {
+	if(err) {
+		return console.log(err.message);
+	}
+
+	user.name.should.equal('Peter Max');
+	user.points.should.equal(45);
+});
+```
+
 ### Create Vertex model
 
 ```js
