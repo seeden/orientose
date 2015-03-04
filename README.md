@@ -25,155 +25,185 @@ npm test
 
 ### Create Connection
 
-	var Orientose = require('orientose');
-	var Schema = Orientose.Schema;
+```js
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
 
-	var connection = new Orientose({
-		host: 'localhost',
-		port: 2424,
-		username: 'root',
-		password: 'yourpassword'
-	}, 'mydb'); 
+var connection = new Orientose({
+	host: 'localhost',
+	port: 2424,
+	username: 'root',
+	password: 'yourpassword'
+}, 'mydb'); 
+```
 
 
 ### Create Schema
 
-	var Orientose = require('orientose');
-	var Schema = Orientose.Schema;
-	var geojson = require('orientose-geojson');
+```js
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
+var geojson = require('orientose-geojson');
 
-	var schema = new Schema({
-		name: { type: String, required: true, index: true, text: true },
-		isAdmin : { type: Boolean, default: false, readonly: true },
-		points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
-		address : {
-			city   : { type: String },
-			street : { type: String } 
-		},
-		tags    : [String]
-	});
+var schema = new Schema({
+	name: { type: String, required: true, index: true, text: true },
+	isAdmin : { type: Boolean, default: false, readonly: true },
+	points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
+	address : {
+		city   : { type: String },
+		street : { type: String } 
+	},
+	tags    : [String]
+});
 
-	schema.virtual('niceName').get(function() {
-		return 'Cool ' + this.name;
-	});
+schema.virtual('niceName').get(function() {
+	return 'Cool ' + this.name;
+});
 
-	schema.pre('save', function(done) {
-		this.address.city = 'Kosice';
-		this.tags.push('admin', 'people');
-		done();
-	});
+schema.pre('save', function(done) {
+	this.address.city = 'Kosice';
+	this.tags.push('admin', 'people');
+	done();
+});
 
-	schema.index({ tags: 1 }, { unique: true} );
+schema.index({ tags: 1 }, { unique: true} );
 
-	schema.plugin(geojson);
-
+schema.plugin(geojson);
+```
 
 ### Create Model
 
-	var User = connection.model('User', schema);
-
+```js
+var User = connection.model('User', schema);
+```
 
 ### Create Document from Model
 
-	User.create({
-		name: 'Peter Max'
-	}, function(err, user) {
-		if(err) {
-			return console.log(err.message);
-		}
+```js
+User.create({
+	name: 'Peter Max'
+}, function(err, user) {
+	if(err) {
+		return console.log(err.message);
+	}
 
-		user.name.should.equal('Peter Max');
-		user.niceName.should.equal('Cool Peter Max');
-		user.address.city.should.equal('Kosice'); //there is a pre save hook
-		user.tags.length.should.equal(2); //there is a pre save hook
-	});
+	user.name.should.equal('Peter Max');
+	user.niceName.should.equal('Cool Peter Max');
+	user.address.city.should.equal('Kosice'); //there is a pre save hook
+	user.tags.length.should.equal(2); //there is a pre save hook
+});
+```
 
 ### Create Vertex model
 
-	var Orientose = require('orientose');
-	var Schema = Orientose.Schema;
+```js
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
 
-	var personSchema = new Schema.V({
-		name: { type: String }
-	});
+var personSchema = new Schema.V({
+	name: { type: String }
+});
 
-	var Person = connection.model('Person', personSchema);
+var Person = connection.model('Person', personSchema);
+```
 
 ### Create Edge model
 
-	var Orientose = require('orientose');
-	var Schema = Orientose.Schema;
+```js
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
 
-	var followSchema = new Schema.E({
-		when: { type: Date, default: Date.now, required: true }
-	}, {
-		unique: true //unique index for properties in/out
-	});
+var followSchema = new Schema.E({
+	when: { type: Date, default: Date.now, required: true }
+}, {
+	unique: true //unique index for properties in/out
+});
 
-	var Follow = connection.model('Follow', followSchema);
+var Follow = connection.model('Follow', followSchema);
+```
 
 ### Create edge
 	
-	var Person = connection.model('Person');
-	var Follow = connection.model('Follow');
+```js
+var Person = connection.model('Person');
+var Follow = connection.model('Follow');
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
 
-	Person.findOne({ name: 'Zlatko Fedor'}, function(err, person1) {
-		Person.findOne({ name: 'Luca'}, function(err, person2) {
-			Follow.create({
-				from: person1,
-				to: person2
-			}, function(err, follow) {
-				console.log(follow.when);
-			});
+var followSchema = new Schema.E({
+	when: { type: Date, default: Date.now, required: true }
+}, {
+	unique: true //unique index for properties in/out
+});
+
+var Follow = connection.model('Follow', followSchema);
+Person.findOne({ name: 'Zlatko Fedor'}, function(err, person1) {
+	Person.findOne({ name: 'Luca'}, function(err, person2) {
+		Follow.create({
+			from: person1,
+			to: person2
+		}, function(err, follow) {
+			console.log(follow.when);
 		});
 	});
-	
+});
+```
 
 #### Model.findOne
 Finds a single document.
 
-	User.findOne({
-		name: 'Zlatko Fedor'
-	}, function(err, user) {
-		user.name.should.equal('Zlatko Fedor');
-	});	
+```js
+User.findOne({
+	name: 'Zlatko Fedor'
+}, function(err, user) {
+	user.name.should.equal('Zlatko Fedor');
+});	
+```
 
 #### Model.find
 Finds multiple documents.
 
-	User.find({
-		name: 'Zlatko Fedor'
-	}, function(err, users) {
-	});	
+```js
+User.find({
+	name: 'Zlatko Fedor'
+}, function(err, users) {
+});	
+```
 
 #### Model.findByRid
 Finds a single document by rid.
 
-	User.findByRid(rid, function(err, user) {
-		user.name = 'Luca';
+```js
+User.findByRid(rid, function(err, user) {
+	user.name = 'Luca';
 
-		user.save(function(err, affectedRows) {
-			affectedRows.should.equal(1);
-		});
+	user.save(function(err, affectedRows) {
+		affectedRows.should.equal(1);
 	});
+});
+```
 
 #### Model.removeByRid
 Remove a single document by a documents rid.
 
-	User.removeByRid(rid, function(err, affectedRows) {
-		affectedRows.should.equal(1);
-	});	
+```js
+User.removeByRid(rid, function(err, affectedRows) {
+	affectedRows.should.equal(1);
+});	
+```
 
 #### Schema types
 If you need to use other types from orient you can use Orientose.Type
 
-	var Orientose = require('orientose');
-	var Schema = Orientose.Schema;
+```js
+var Orientose = require('orientose');
+var Schema = Orientose.Schema;
 
-	var schema = new Schema({
-		count  : { type: Orientose.Type.Integer },
-		count2 : { type: Orientose.Type.Long }
-	});	
+var schema = new Schema({
+	count  : { type: Orientose.Type.Integer },
+	count2 : { type: Orientose.Type.Long }
+});	
+```
 
 		
 ## Credits
