@@ -9,7 +9,7 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
  * Define schemas
  * Extended validation (sync, async)
  * Pre/post hooks for save, update, remove
- * Create db structure from your schema automatically
+ * Create db structure and indexes from your schema automatically
  * Plugins like in mongoose
 
 ### TR|TD
@@ -36,7 +36,7 @@ Right know we have support only for schema-full.
 	var geojson = require('orientose-geojson');
 
 	var schema = new Schema({
-		name: { type: String, required: true },
+		name: { type: String, required: true, index: true, text: true },
 		isAdmin : { type: Boolean, default: false, readonly: true },
 		points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
 		address : {
@@ -55,6 +55,8 @@ Right know we have support only for schema-full.
 		this.tags.push('admin', 'people');
 		done();
 	});
+
+	schema.index({ tags: 1 }, { unique: true} );
 
 	schema.plugin(geojson);
 
@@ -78,6 +80,64 @@ Right know we have support only for schema-full.
 		user.address.city.should.equal('Kosice'); //there is a pre save hook
 		user.tags.length.should.equal(2); //there is a pre save hook
 	});
+
+## Create Vertex model
+
+	var Orientose = require('orientose');
+	var Schema = Orientose.Schema;
+
+	var personSchema = new Schema.V({
+		name: { type: String }
+	});
+
+	var Person = connection.model('Person', personSchema);
+
+## Create Edge model
+
+	var Orientose = require('orientose');
+	var Schema = Orientose.Schema;
+
+	var followSchema = new Schema.E({
+		when: { type: Date, default: Date.now, required: true }
+	}, {
+		unique: true //unique index for properties in/out
+	});
+
+	var Follow = connection.model('Follow', followSchema);
+
+## Create edge
+	
+	var Person = connection.model('Person');
+	var Follow = connection.model('Follow');
+
+	Person.findOne({ name: 'Zlatko Fedor'}, function(err, person1) {
+		Person.findOne({ name: 'Luca'}, function(err, person2) {
+			Follow.create({
+				from: person1,
+				to: person2
+			}, function(err, follow) {
+				console.log(follow.when);
+			});
+		});
+	});
+	
+
+### Model.findOne
+Finds a single document.
+
+	User.findOne({
+		name: 'Zlatko Fedor'
+	}, function(err, user) {
+		user.name.should.equal('Zlatko Fedor');
+	});	
+
+### Model.find
+Finds multiple documents.
+
+	User.find({
+		name: 'Zlatko Fedor'
+	}, function(err, users) {
+	});	
 
 ### Model.findByRid
 Finds a single document by rid.

@@ -1,5 +1,8 @@
 import should from "should";
 import Orientose, {Schema} from '../lib/index';
+import {waterfall} from "async";
+
+var connection = null;
 
 describe('Schema', function() {
 	var schema = null;
@@ -20,12 +23,11 @@ describe('Schema', function() {
 
 describe('Connection', function() {
 	var schema = null;
-	var connection = null;
 	var User = null;
 
 	it('should be able to create a simple schema', function() {
 		schema = new Schema({
-			name    : { type: String, required: true },
+			name    : { type: String, required: true, index: true },
 			isAdmin : { type: Boolean, default: false, readonly: true },
 			points  : { type: Number, default: 30, notNull: true, min: 0, max: 99999 },
 			hooked  : { type: String },
@@ -171,32 +173,109 @@ describe('Connection', function() {
 		UserModel.should.equal(User);
 		done();
 	});	
+});	
 
-	it('should be able to create model extended from V', function(done) {
-		var personSchema = new Schema({
+describe('V', function() {	
+	it('should be able to create model Person extended from V', function(done) {
+		var personSchema = new Schema.V({
 			name: { type: String }
-		}, {
-			extend: 'V'
 		});
 
-		var Person = connection.model('Person', personSchema, function(){
+		var Person = connection.model('Person', personSchema, function(err) {
+			if(err) {
+				throw err;
+			}
+
 			done();
 		});
-		
-		
 	});	
 
-	it('should be able to create model extended from V', function(done) {
-		var personSchema = new Schema({
-			omg: { type: String }
-		}, {
-			extend: 'Person'
-		});
+	it('should be able to create document1', function(done) {
+		var Person = connection.model('Person');
 
-		var Person = connection.model('Person2', personSchema, function(){
+		new Person({
+			name: 'Zlatko Fedor'
+		}).save(function(err, person) {
+			if(err) {
+				throw err;
+			}	
+
 			done();
 		});
-		
-		
+	});	
+
+	it('should be able to create document2', function(done) {
+		var Person = connection.model('Person');
+
+		new Person({
+			name: 'Luca'
+		}).save(function(err, person) {
+			if(err) {
+				throw err;
+			}	
+
+			done();
+		});
+	});	
+});	
+
+describe('E', function() {	
+	it('should be able to create edge model extended from E', function(done) {
+		var followSchema = new Schema.E({
+			when: { type: Date, required: true }
+		}, {
+			unique: true
+		});
+
+		var Follow = connection.model('Follow', followSchema, function(err) {
+			if(err) {
+				throw err;
+			}
+			done();
+		});
+	});	
+
+	it('should be able to create edge beetwean two person', function(done) {
+		var Follow = connection.model('Follow');
+		var Person = connection.model('Person');
+
+
+		waterfall([
+			function(callback) {
+				Person.findOne({
+					name: 'Zlatko Fedor'
+				}, callback);
+			},
+			function(person1, callback) {
+				Person.findOne({
+					name: 'Luca'
+				}, function(err, person2) {
+					if(err) {
+						return callback(err);
+					}
+
+					callback(null, person1, person2);
+				});
+			},
+			function(p1, p2, callback) {
+				new Follow({
+					from: p1,
+					to: p2,
+					when: new Date()
+				}).save(function(err, edge) {
+					if(err) {
+						return callback(err);
+					}
+
+					callback(null);
+				});
+			}
+		], function(err) {
+			if(err) {
+				throw err;
+			}
+
+			done();
+		});
 	});	
 });
