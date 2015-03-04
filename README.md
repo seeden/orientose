@@ -15,8 +15,15 @@ Orientose is a OrientDB object modeling with support of schemas inspired by mong
 ### TR|TD
 Right know we have support only for schema-full. 
 
+## Running Tests
 
-## Create Connection
+```sh
+npm test
+```
+
+## Usage
+
+### Create Connection
 
 	var Orientose = require('orientose');
 	var Schema = Orientose.Schema;
@@ -29,7 +36,7 @@ Right know we have support only for schema-full.
 	}, 'mydb'); 
 
 
-## Create Schema
+### Create Schema
 
 	var Orientose = require('orientose');
 	var Schema = Orientose.Schema;
@@ -61,12 +68,12 @@ Right know we have support only for schema-full.
 	schema.plugin(geojson);
 
 
-## Create Model
+### Create Model
 
 	var User = connection.model('User', schema);
 
 
-## Create Document from Model
+### Create Document from Model
 
 	User.create({
 		name: 'Peter Max'
@@ -81,7 +88,7 @@ Right know we have support only for schema-full.
 		user.tags.length.should.equal(2); //there is a pre save hook
 	});
 
-## Create Vertex model
+### Create Vertex model
 
 	var Orientose = require('orientose');
 	var Schema = Orientose.Schema;
@@ -92,7 +99,7 @@ Right know we have support only for schema-full.
 
 	var Person = connection.model('Person', personSchema);
 
-## Create Edge model
+### Create Edge model
 
 	var Orientose = require('orientose');
 	var Schema = Orientose.Schema;
@@ -105,7 +112,7 @@ Right know we have support only for schema-full.
 
 	var Follow = connection.model('Follow', followSchema);
 
-## Create edge
+### Create edge
 	
 	var Person = connection.model('Person');
 	var Follow = connection.model('Follow');
@@ -122,7 +129,7 @@ Right know we have support only for schema-full.
 	});
 	
 
-### Model.findOne
+#### Model.findOne
 Finds a single document.
 
 	User.findOne({
@@ -131,7 +138,7 @@ Finds a single document.
 		user.name.should.equal('Zlatko Fedor');
 	});	
 
-### Model.find
+#### Model.find
 Finds multiple documents.
 
 	User.find({
@@ -139,7 +146,7 @@ Finds multiple documents.
 	}, function(err, users) {
 	});	
 
-### Model.findByRid
+#### Model.findByRid
 Finds a single document by rid.
 
 	User.findByRid(rid, function(err, user) {
@@ -150,14 +157,14 @@ Finds a single document by rid.
 		});
 	});
 
-### Model.removeByRid
+#### Model.removeByRid
 Remove a single document by a documents rid.
 
 	User.removeByRid(rid, function(err, affectedRows) {
 		affectedRows.should.equal(1);
 	});	
 
-### Schema types
+#### Schema types
 If you need to use other types from orient you can use Orientose.Type
 
 	var Orientose = require('orientose');

@@ -1,6 +1,6 @@
 {
 	"name": "orientose",
-	"version": "0.1.9",
+	"version": "0.1.10",
 	"description": "OrientDB ODM with support for schemas inspired by mongoose",
 	"author": {
 		"name": "Zlatko Fedor",
@@ -13,15 +13,18 @@
 	},
 	"keywords": [
 		"orient",
+		"oriento",
 		"orientdb",
 		"mongoose",
 		"record",
 		"document",
 		"model",
+		"edge",
 		"schema",
 		"db",
 		"stream",
-		"orm"
+		"orm",
+		"odm"
 	],
 	"private": false,
 	"licenses": [{
