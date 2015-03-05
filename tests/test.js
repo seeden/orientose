@@ -68,6 +68,15 @@ describe('Connection', function() {
 		var tagsOptions = schema.get('tags');
 		Array.isArray(tagsOptions.type).should.equal(true);
 
+		schema.set('address.zip', {
+			type: Number,
+			default: null
+		});
+
+		var zipOptions = schema.get('address.zip');
+		zipOptions.type.should.equal(Number);
+		should(zipOptions.default).equal(null);
+
 	});
 
 	it('should be able to create a connection', function() {

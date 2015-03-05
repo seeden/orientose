@@ -238,6 +238,98 @@ User.removeByRid(rid, function(err, affectedRows) {
 });	
 ```
 
+#### Schema.add
+Adds key path / schema type pairs to this schema.
+
+```js
+schema.add({
+	name: { type: String }
+});	
+```
+
+#### Schema.set(key, value)
+Sets a schema option.
+
+```js
+schema.set('name', { type: String });	
+```
+
+#### Schema.get(key)
+Gets a schema option.
+
+```js
+var options = schema.get('name');	
+options.type.should.equal(String);
+```
+
+#### Schema.eachPath(fn)
+Iterates the schemas paths similar to Array#forEach.
+
+```js
+schema.eachPath(function(path, config) {
+	path.should.equal('name');
+});
+```
+
+#### Schema.pre(method, callback)
+Defines a pre hook for the document.
+
+```js
+schema.pre('save', function (next) {
+	if (!this.name) this.name = 'Zlatko Fedor';
+	next();
+});
+```
+
+#### Schema.virtual(name, [options])
+Creates a virtual type with the given name.
+
+```js
+schema.virtual('niceName').get(function () {
+	return 'Mr. ' + this.name;
+});
+```
+
+#### Schema.plugin(plugin, opts)
+Registers a plugin for this schema.
+
+```js
+var plugin = require('your-plugin-name');
+
+schema.plugin(plugin, {
+	timeout: 3000
+});
+```
+
+#### Schema.method(method, fn)
+Adds an instance method to documents constructed from Models compiled from this schema.
+
+```js
+schema.method('addSomePoints', function(value, callback) {
+	this.points += value;
+	this.save(callback);
+});
+
+var User = connection.model('User', schema);
+var user = new User();
+
+user.addSomePoints();
+```
+
+#### Schema.static(name, fn)
+Adds static "class" methods to Models compiled from this schema.
+
+```js
+schema.static('findByName', function(name, callback) {
+	return this.find({ name: name }, callback);
+});
+
+var User = connection.model('User', schema);
+User.findByName('Zlatko Fedor', function (err, user) {
+
+});
+```
+
 #### Schema types
 If you need to use other types from orient you can use Orientose.Type
 
