@@ -55,6 +55,19 @@ describe('Connection', function() {
 		schema.statics.getStaticValue = function() {
 			return 'Static value';
 		};
+
+		var nameOptions = schema.get('name');
+		nameOptions.type.should.equal(String);
+		nameOptions.required.should.equal(true);
+		nameOptions.index.should.equal(true);
+
+		var cityOptions = schema.get('address.city');
+		cityOptions.type.should.equal(String);
+		cityOptions.default.should.equal('Kosice');
+
+		var tagsOptions = schema.get('tags');
+		Array.isArray(tagsOptions.type).should.equal(true);
+
 	});
 
 	it('should be able to create a connection', function() {
@@ -156,12 +169,37 @@ describe('Connection', function() {
 		});
 	});	
 
+	it('should be able to set properties by path', function(done) {
+		User.findByRid(rid, function(err, user) {
+			if(err) {
+				throw err;
+			}
+
+			user.set({
+				'address.street': 'Svabska',
+				points: 45,
+				address: {
+					city: 'Presov'
+				}
+			});
+
+			user.points.should.equal(45);
+			user.address.street.should.equal('Svabska');
+			user.address.city.should.equal('Presov');
+
+			user.get('points').should.equal(45);
+			user.get('address.street').should.equal('Svabska');
+
+			done();
+		});
+	});		
+
 	it('should be able to remove a document', function(done) {
 		User.removeByRid(rid, function(err, total) {
 			if(err) {
 				throw err;
 			}
-
+			
 			total.should.equal(1);
 
 			done();

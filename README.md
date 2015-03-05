@@ -120,7 +120,11 @@ var Orientose = require('orientose');
 var Schema = Orientose.Schema;
 
 var personSchema = new Schema.V({
-	name: { type: String }
+	name    : { type: String },
+	address : {
+		city   : { type: String },
+		street : { type: String }
+	}
 });
 
 var Person = connection.model('Person', personSchema);
@@ -165,6 +169,29 @@ Person.findOne({ name: 'Zlatko Fedor'}, function(err, person1) {
 			console.log(follow.when);
 		});
 	});
+});
+```
+
+### Properties
+	
+#### Set properties
+You can use dot notation
+
+```js
+var Person = connection.model('Person');
+
+Person.findOne({ name: 'Zlatko Fedor'}, function(err, person) {
+	person.set({
+		name: 'Luca',
+		'address.city': 'Presov',
+		address: {
+			street: 'Svabska'
+		}
+	});
+
+	person.name.should.equal('Luca');
+	person.address.city.should.equal('Presov');
+	person.address.street.should.equal('Svabska');
 });
 ```
 
