@@ -76,7 +76,6 @@ describe('Connection', function() {
 		var zipOptions = schema.get('address.zip');
 		zipOptions.type.should.equal(Number);
 		should(zipOptions.default).equal(null);
-
 	});
 
 	it('should be able to create a connection', function() {

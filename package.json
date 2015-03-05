@@ -1,6 +1,6 @@
 {
 	"name": "orientose",
-	"version": "0.1.15",
+	"version": "0.1.16",
 	"description": "OrientDB ODM with support for schemas inspired by mongoose",
 	"author": {
 		"name": "Zlatko Fedor",
@@ -31,12 +31,13 @@
 		"type": "MIT",
 		"url": "http://www.opensource.org/licenses/MIT"
 	}],
-	"main": "./lib/",
+	"main": "./dist/",
 	"engines": {
 		"node": ">= 0.10.0"
 	},
 	"scripts": {
-		"test": "babel-node ./node_modules/gulp/bin/gulp.js test"
+		"test"  : "babel-node ./node_modules/gulp/bin/gulp.js test",
+		"build" : "node ./node_modules/gulp/bin/gulp.js build"
 	},
 	"dependencies": {
 		"babel": "~4.6.1",
@@ -52,6 +53,7 @@
 		"gulp": "~3.8.11",
 		"gulp-mocha": "~2.0.0",
 		"gulp-babel": "~4.0.0",
+		"gulp-util": "~3.0.4",
 		"should": "~5.0.1"
 	}
 }
