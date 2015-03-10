@@ -1,7 +1,6 @@
 var gulp = require('gulp');
 var mocha = require('gulp-mocha');
 var babel = require('gulp-babel');
-var rename = require('gulp-rename');
 var fs = require('fs');
 
 gulp.task('test', function () {
@@ -13,7 +12,7 @@ gulp.task('test', function () {
 });
 
 gulp.task('build', function (callback) {
-	return gulp.src('./lib/**/*.js')
+	return gulp.src('./src/**/*.js')
     	.pipe(babel())
     	.pipe(gulp.dest("./dist"));
 });

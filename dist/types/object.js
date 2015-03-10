@@ -63,6 +63,14 @@ var ObjectType = (function (Type) {
 			},
 			writable: true,
 			configurable: true
+		},
+		isModified: {
+			get: function () {
+				var jsonCurrent = JSON.stringify(this.toJSON());
+				var jsonOriginal = JSON.stringify(this.original);
+				return jsonCurrent === jsonOriginal;
+			},
+			configurable: true
 		}
 	});
 

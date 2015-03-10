@@ -118,10 +118,9 @@ var Type = (function () {
 			configurable: true
 		},
 		isModified: {
-			value: function isModified() {
+			get: function () {
 				return this.original !== this.value;
 			},
-			writable: true,
 			configurable: true
 		},
 		setupData: {
