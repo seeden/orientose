@@ -16,6 +16,7 @@ var Type = _interopRequire(require("./types/index"));
 
 SchemaOrient.E = SchemaE;
 SchemaOrient.V = SchemaV;
+SchemaOrient.ObjectId = Type.Rid; //mongoose compatible
 
 Connection.Schema = SchemaOrient;
 

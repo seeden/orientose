@@ -272,6 +272,11 @@ var Schema = (function (EventEmitter) {
 		},
 		set: {
 			value: function set(propName, options) {
+				// ignore {_id: false}
+				if (options === false) {
+					return;
+				}
+
 				options = options || {};
 
 				var pos = propName.indexOf(".");

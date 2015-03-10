@@ -160,6 +160,11 @@ export default class Schema extends EventEmitter {
 	}	
 
 	set(propName, options) {
+		// ignore {_id: false}
+		if(options === false) {
+			return;
+		}
+
 		options = options || {};
 		
 		var pos = propName.indexOf('.');

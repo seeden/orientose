@@ -1,5 +1,5 @@
 import should from "should";
-import Orientose, {Schema} from '../lib/index';
+import Orientose, {Schema} from '../src/orientose';
 import {waterfall} from "async";
 
 var connection = null;
