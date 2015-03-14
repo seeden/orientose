@@ -63,8 +63,12 @@ var Schema = (function (EventEmitter) {
 	_prototypeProperties(Schema, {
 		normalizeOptions: {
 			value: function normalizeOptions(options) {
+				if (options === false) {
+					return null;
+				}
+
 				//1. convert objects
-				if (!options.type && _.isPlainObject(options)) {
+				if (_.isPlainObject(options) && (!options.type || options.type.type)) {
 					options = {
 						type: options
 					};
@@ -109,6 +113,10 @@ var Schema = (function (EventEmitter) {
 					}
 
 					var normalisedOptions = Schema.normalizeOptions(itemOptions);
+					if (!normalisedOptions) {
+						throw new Error("Options is undefined");
+					}
+
 					type.schemaType = normalisedOptions.schemaType;
 					type.options = normalisedOptions.options;
 				}
@@ -274,14 +282,19 @@ var Schema = (function (EventEmitter) {
 			value: function set(propName, options) {
 				// ignore {_id: false}
 				if (options === false) {
-					return;
+					return this;
 				}
 
 				options = options || {};
 
 				var pos = propName.indexOf(".");
 				if (pos === -1) {
-					this._props[propName] = Schema.normalizeOptions(options);
+					var normalizedOptions = Schema.normalizeOptions(options);
+					if (!normalizedOptions) {
+						return this;
+					}
+
+					this._props[propName] = normalizedOptions;
 
 					if (!options.index) {
 						return this;
@@ -302,15 +315,16 @@ var Schema = (function (EventEmitter) {
 
 				var prop = this._props[propName];
 				if (!prop) {
-					return;
+					return this;
 				}
 
 				var type = prop.options.type;
 				if (!type.isSchema) {
-					return;
+					return this;
 				}
 
-				return type.set(nextPath, options);
+				type.set(nextPath, options);
+				return this;
 			},
 			writable: true,
 			configurable: true
@@ -363,8 +377,26 @@ var Schema = (function (EventEmitter) {
 			value: function virtual(name, options) {
 				options = options || {};
 
-				if (name.indexOf(".") !== -1) {
-					throw new Error("You can not set virtual method for subdocument in this way. Please use subschemas.");
+				var pos = name.indexOf(".");
+				if (pos !== -1) {
+					var field = name.substr(0, pos);
+					var nextField = name.substr(pos + 1);
+
+					var prop = this._props[field];
+					if (!prop) {
+						throw new Error("Field does not exists " + field);
+					}
+
+					var type = prop.options.type;
+					if (_.isArray(type)) {
+						type = type.options.type;
+					}
+
+					if (!type.isSchema) {
+						throw new Error("Field is not an object " + field);
+					}
+
+					return type.virtual(nextField, options);
 				}
 
 				if (!this._virtuals[name]) {
@@ -485,7 +517,7 @@ var Schema = (function (EventEmitter) {
 
 				return _pathWrapper;
 			})(function (path, options) {
-				if (typeof this.options !== "undefined") {
+				if (typeof options !== "undefined") {
 					this.set(path, options);
 					return this;
 				}
@@ -505,7 +537,7 @@ var Schema = (function (EventEmitter) {
 						options: options
 					};
 
-					if (type.isSchema) {
+					if (type && type.isSchema) {
 						config.schema = options.type;
 					}
 

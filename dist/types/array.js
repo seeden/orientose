@@ -50,6 +50,12 @@ var ArrayType = (function (Type) {
 			},
 			writable: true,
 			configurable: true
+		},
+		isArray: {
+			get: function () {
+				return true;
+			},
+			configurable: true
 		}
 	}, {
 		_createItem: {

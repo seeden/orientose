@@ -76,4 +76,8 @@ export default class ArrayType extends Type {
 			linkedType: item.schemaType.getDbType(item.options)
 		};
 	}
+
+	static get isArray() {
+		return true;
+	}
 }
