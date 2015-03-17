@@ -4,7 +4,7 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 var _defineProperty = function (obj, key, value) { return Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -28,13 +28,7 @@ var MixedType = _interopRequire(require("../types/mixed"));
 
 var IndexType = _interopRequire(require("../constants/indextype"));
 
-/*
-{
-	extend: 'V'
-}
-*/
-
-var Schema = (function (EventEmitter) {
+var Schema = (function (_EventEmitter) {
 	function Schema(props, options) {
 		_classCallCheck(this, Schema);
 
@@ -58,86 +52,23 @@ var Schema = (function (EventEmitter) {
 		this.add(props);
 	}
 
-	_inherits(Schema, EventEmitter);
+	_inherits(Schema, _EventEmitter);
 
-	_prototypeProperties(Schema, {
-		normalizeOptions: {
-			value: function normalizeOptions(options) {
-				if (options === false) {
-					return null;
-				}
-
-				//1. convert objects
-				if (_.isPlainObject(options) && (!options.type || options.type.type)) {
-					options = {
-						type: options
-					};
-				}
-
-				//2. prepare array
-				if (_.isArray(options)) {
-					options = {
-						type: options
-					};
-				}
-
-				options.type = Schema.normalizeType(options.type);
-
-				return {
-					schemaType: convertType(options.type),
-					options: options
-				};
-			},
-			writable: true,
-			configurable: true
-		},
-		normalizeType: {
-			value: function normalizeType(type) {
-				//automatically prepare schema for plain objects
-				if (_.isPlainObject(type)) {
-					type = new Schema(type);
-				}
-
-				if (_.isArray(type)) {
-					if (!type.length) {
-						type = [MixedType];
-					} else if (type.length !== 1) {
-						throw new Error("Type of an array item is undefined");
-					}
-
-					var itemOptions = type[0];
-					if (!_.isPlainObject(itemOptions)) {
-						itemOptions = {
-							type: itemOptions
-						};
-					}
-
-					var normalisedOptions = Schema.normalizeOptions(itemOptions);
-					if (!normalisedOptions) {
-						throw new Error("Options is undefined");
-					}
-
-					type.schemaType = normalisedOptions.schemaType;
-					type.options = normalisedOptions.options;
-				}
-
-				return type;
-			},
-			writable: true,
-			configurable: true
-		}
-	}, {
+	_createClass(Schema, {
 		extendClassName: {
 			get: function () {
 				return this._options.extend;
-			},
-			configurable: true
+			}
 		},
 		hooks: {
 			get: function () {
 				return this._hooks;
-			},
-			configurable: true
+			}
+		},
+		options: {
+			get: function () {
+				return this._options;
+			}
 		},
 		DataClass: {
 			get: function () {
@@ -145,23 +76,21 @@ var Schema = (function (EventEmitter) {
 					this._dataClass = Data.createClass(this);
 				}
 				return this._dataClass;
-			},
-			configurable: true
+			}
 		},
 		add: {
 			value: function add(props) {
+				var _this = this;
+
 				if (!_.isObject(props)) {
 					throw new Error("Props is not an object");
 				}
 
-				for (var propName in props) {
-					this.set(propName, props[propName]);
-				}
-
+				Object.keys(props).forEach(function (propName) {
+					return _this.setPath(propName, props[propName]);
+				});
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_indexName: {
 			value: function _indexName(properties) {
@@ -170,9 +99,7 @@ var Schema = (function (EventEmitter) {
 				});
 
 				return props.join("_");
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		index: {
 			value: function index(properties, options) {
@@ -214,72 +141,66 @@ var Schema = (function (EventEmitter) {
 				};
 
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		hasIndex: {
 			value: function hasIndex(name) {
 				return !!this._indexes[name];
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		getIndex: {
 			value: function getIndex(name) {
 				return this._indexes[name];
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		indexNames: {
 			get: function () {
 				return Object.keys(this._indexes);
-			},
-			configurable: true
+			}
 		},
 		get: {
-
-			/**
-   */
-
-			value: function get(propName) {
-				var pos = propName.indexOf(".");
+			value: function get(key) {
+				return this.options[key];
+			}
+		},
+		set: {
+			value: function set(key, value) {
+				this.options[key] = value;
+				return this;
+			}
+		},
+		getSchemaType: {
+			value: function getSchemaType(path) {
+				var prop = this.getPath(path);
+				return prop ? prop.schemaType : void 0;
+			}
+		},
+		getPath: {
+			value: function getPath(path, stopOnArray) {
+				var pos = path.indexOf(".");
 				if (pos === -1) {
-					if (!this._props[propName]) {
-						return;
-					}
-
-					return this._props[propName].options;
+					return this._props[path];
 				}
 
-				var nextPath = propName.substr(pos + 1);
-				propName = propName.substr(0, pos);
+				var subPath = path.substr(pos + 1);
+				var propName = path.substr(0, pos);
 
 				var prop = this._props[propName];
 				if (!prop) {
-					return;
+					return prop;
 				}
 
-				var type = prop.options.type;
-				if (!type.isSchema) {
-					return;
+				if (prop.type.isSchema) {
+					return prop.type.getPath(subPath);
 				}
 
-				return type.get(nextPath);
-			},
-			writable: true,
-			configurable: true
+				if (!stopOnArray && prop.item && prop.item.type.isSchema) {
+					return prop.item.type.getPath(subPath);
+				}
+			}
 		},
-		getSchemaType: {
-			value: function getSchemaType(property) {
-				return this._props[property].schemaType;
-			},
-			writable: true,
-			configurable: true
-		},
-		set: {
-			value: function set(propName, options) {
+		setPath: {
+			value: function setPath(path, options) {
 				// ignore {_id: false}
 				if (options === false) {
 					return this;
@@ -287,20 +208,20 @@ var Schema = (function (EventEmitter) {
 
 				options = options || {};
 
-				var pos = propName.indexOf(".");
+				var pos = path.indexOf(".");
 				if (pos === -1) {
-					var normalizedOptions = Schema.normalizeOptions(options);
+					var normalizedOptions = this.normalizeOptions(options);
 					if (!normalizedOptions) {
 						return this;
 					}
 
-					this._props[propName] = normalizedOptions;
+					this._props[path] = normalizedOptions;
 
 					if (!options.index) {
 						return this;
 					}
 
-					this.index(_defineProperty({}, propName, propName), {
+					this.index(_defineProperty({}, path, path), {
 						name: options.indexName,
 						unique: options.unique,
 						sparse: options.sparse,
@@ -310,38 +231,26 @@ var Schema = (function (EventEmitter) {
 					return this;
 				}
 
-				var nextPath = propName.substr(pos + 1);
-				propName = propName.substr(0, pos);
+				var subPath = path.substr(pos + 1);
+				var propName = path.substr(0, pos);
 
 				var prop = this._props[propName];
-				if (!prop) {
-					return this;
+				if (prop && prop.type.isSchema) {
+					prop.type.setPath(subPath, options);
 				}
 
-				var type = prop.options.type;
-				if (!type.isSchema) {
-					return this;
-				}
-
-				type.set(nextPath, options);
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		has: {
 			value: function has(property) {
 				return !!this._props[property];
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		propertyNames: {
 			value: function propertyNames() {
 				return Object.keys(this._props);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		method: {
 			value: function method(name, fn) {
@@ -354,9 +263,7 @@ var Schema = (function (EventEmitter) {
 
 				this.methods[name] = fn;
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		"static": {
 			value: function _static(name, fn) {
@@ -369,57 +276,57 @@ var Schema = (function (EventEmitter) {
 
 				this.statics[name] = fn;
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		virtual: {
-			value: function virtual(name, options) {
+			value: (function (_virtual) {
+				var _virtualWrapper = function virtual(_x, _x2) {
+					return _virtual.apply(this, arguments);
+				};
+
+				_virtualWrapper.toString = function () {
+					return _virtual.toString();
+				};
+
+				return _virtualWrapper;
+			})(function (path, options) {
 				options = options || {};
 
-				var pos = name.indexOf(".");
+				var schema = this;
+				var pos = path.indexOf(".");
 				if (pos !== -1) {
-					var field = name.substr(0, pos);
-					var nextField = name.substr(pos + 1);
+					var subPaths = path.split(".");
+					var path = subPaths.pop();
 
-					var prop = this._props[field];
-					if (!prop) {
-						throw new Error("Field does not exists " + field);
+					var prop = this.getPath(subPaths.join("."));
+					if (!prop || !prop.type || !prop.type.isSchema) {
+						throw new Error("Field does not exists " + subPaths.join("."));
 					}
 
-					var type = prop.options.type;
-					if (_.isArray(type)) {
-						type = type.options.type;
-					}
-
-					if (!type.isSchema) {
-						throw new Error("Field is not an object " + field);
-					}
-
-					return type.virtual(nextField, options);
+					return prop.type.virtual(path, options);
 				}
 
-				if (!this._virtuals[name]) {
-					this._virtuals[name] = {
-						schemaType: VirtualType,
-						options: options,
-						getset: {
-							get: function get(fn) {
-								options.get = fn;
-								return this;
-							},
-							set: function set(fn) {
-								options.set = fn;
-								return this;
-							}
+				if (this._virtuals[path]) {
+					return this._virtuals[path].getset;
+				}
+
+				var virtual = this._virtuals[path] = {
+					schemaType: VirtualType,
+					options: options,
+					getset: {
+						get: function get(fn) {
+							options.get = fn;
+							return this;
+						},
+						set: function set(fn) {
+							options.set = fn;
+							return this;
 						}
-					};
-				}
+					}
+				};
 
-				return this._virtuals[name].getset;
-			},
-			writable: true,
-			configurable: true
+				return virtual.getset;
+			})
 		},
 		alias: {
 			value: function alias(to, from) {
@@ -430,64 +337,19 @@ var Schema = (function (EventEmitter) {
 				});
 
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		pre: {
 			value: function pre(name, async, fn) {
 				this._hooks.pre(name, async, fn);
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		post: {
 			value: function post(name, async, fn) {
 				this._hooks.post(name, async, fn);
 				return this;
-			},
-			writable: true,
-			configurable: true
-		},
-		traverse: {
-			value: function traverse(fn, traverseChildren, skipObjects, parentPath) {
-				var props = this._props;
-				var virtuals = this._virtuals;
-
-				for (var name in props) {
-					if (!props.hasOwnProperty(name)) {
-						continue;
-					}
-
-					var prop = props[name];
-					var currentPath = parentPath ? parentPath + "." + name : name;
-					var propType = prop.options.type;
-					var isSchema = propType && propType.isSchema;
-
-					fn(name, prop, currentPath, false);
-
-					if (traverseChildren && isSchema) {
-						propType.traverse(fn, traverseChildren, skipObjects, currentPath);
-					}
-				}
-
-				//traverse virtual poroperties
-				for (var name in virtuals) {
-					if (!virtuals.hasOwnProperty(name)) {
-						continue;
-					}
-
-					var prop = virtuals[name];
-					var currentPath = parentPath ? parentPath + "." + name : name;
-
-					fn(name, prop, currentPath, true);
-				}
-
-				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		plugin: {
 			value: function plugin(pluginFn, options) {
@@ -495,19 +357,16 @@ var Schema = (function (EventEmitter) {
 
 				pluginFn(this, options);
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		isSchema: {
 			get: function () {
 				return true;
-			},
-			configurable: true
+			}
 		},
 		path: {
 			value: (function (_path) {
-				var _pathWrapper = function path(_x, _x2) {
+				var _pathWrapper = function path(_x3, _x4) {
 					return _path.apply(this, arguments);
 				};
 
@@ -516,36 +375,154 @@ var Schema = (function (EventEmitter) {
 				};
 
 				return _pathWrapper;
-			})(function (path, options) {
-				if (typeof options !== "undefined") {
-					this.set(path, options);
-					return this;
+			})(function (path) {
+				for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+					args[_key - 1] = arguments[_key];
 				}
 
-				return this.get(path).type;
-			}),
-			writable: true,
-			configurable: true
+				if (args.length === 0) {
+					var prop = this.getPath(path, true);
+					if (!prop) {
+						return prop;
+					}
+
+					return Schema.toMongoose(prop, path);
+				}
+
+				this.setPath(path, args[0]);
+				return this;
+			})
+		},
+		traverse: {
+			value: function traverse(fn, traverseChildren, parentPath) {
+				var props = this._props;
+				var virtuals = this._virtuals;
+
+				Object.keys(props).forEach(function (name) {
+					var prop = props[name];
+					var path = parentPath ? parentPath + "." + name : name;
+
+					var canTraverseChildren = fn(name, prop, path, false);
+					if (canTraverseChildren === false) {
+						return;
+					}
+
+					if (prop.type.isSchema) {
+						prop.type.traverse(fn, traverseChildren, path);
+					}
+
+					if (prop.item && prop.item.type.isSchema) {
+						prop.item.type.traverse(fn, traverseChildren, path);
+					}
+				});
+
+				//traverse virtual poroperties
+				Object.keys(virtuals).forEach(function (name) {
+					var prop = virtuals[name];
+					var path = parentPath ? parentPath + "." + name : name;
+
+					fn(name, prop, path, true);
+				});
+
+				return this;
+			}
 		},
 		eachPath: {
 			value: function eachPath(fn) {
 				this.traverse(function (name, prop, path, isVirtual) {
-					var options = prop.options;
-					var type = options.type;
+					if (isVirtual) {
+						return false;
+					}
 
-					var config = {
-						options: options
-					};
-
-					if (type && type.isSchema) {
-						config.schema = options.type;
+					var config = Schema.toMongoose(prop, path);
+					if (!config) {
+						return;
 					}
 
 					fn(path, config);
+
+					if (prop.item) {
+						return false;
+					}
 				});
-			},
-			writable: true,
-			configurable: true
+			}
+		},
+		normalizeOptions: {
+			value: function normalizeOptions(options) {
+				if (!options) {
+					return null;
+				}
+
+				//convert basic types
+				var basicTypes = [String, Number, Boolean, Date];
+				if (basicTypes.indexOf(options) !== -1) {
+					options = {
+						type: options
+					};
+				}
+
+				//1. convert objects
+				if (_.isPlainObject(options) && (!options.type || options.type.type)) {
+					options = {
+						type: options
+					};
+				}
+
+				//2. prepare array
+				if (_.isArray(options)) {
+					options = {
+						type: options
+					};
+				}
+
+				var type = options.isSchema ? options : options.type;
+
+				//create schema from plain object
+				if (_.isPlainObject(type)) {
+					type = new Schema(type);
+				}
+
+				var normalised = {
+					schema: this,
+					type: type,
+					schemaType: convertType(type),
+					options: options
+				};
+
+				if (_.isArray(type)) {
+					var itemOptions = type.length ? type[0] : { type: MixedType };
+					normalised.item = this.normalizeOptions(itemOptions);
+				}
+
+				return normalised;
+			}
+		}
+	}, {
+		toMongoose: {
+			value: function toMongoose(prop, path) {
+				var options = prop.options || {};
+
+				if (prop.type.isSchema) {
+					return;
+				}
+
+				var config = {
+					path: path,
+					setters: [],
+					getters: [],
+					options: options,
+					defaultValue: options["default"]
+				};
+
+				if (prop.item) {
+					config.instance = "Array";
+					if (prop.item.type.isSchema) {
+						config.schema = prop.item.type;
+					}
+				}
+
+				return config;
+			}
 		}
 	});
 

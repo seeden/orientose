@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
@@ -20,7 +20,7 @@ var SchemaV = _interopRequire(require("./schemas/orient/v"));
 
 var SchemaE = _interopRequire(require("./schemas/orient/e"));
 
-var Connection = (function (EventEmitter) {
+var Connection = (function (_EventEmitter) {
 	function Connection(options, dbOptions) {
 		var _this = this;
 
@@ -56,20 +56,18 @@ var Connection = (function (EventEmitter) {
 		this._registerBasicModels();
 	}
 
-	_inherits(Connection, EventEmitter);
+	_inherits(Connection, _EventEmitter);
 
-	_prototypeProperties(Connection, null, {
+	_createClass(Connection, {
 		db: {
 			get: function () {
 				return this._db;
-			},
-			configurable: true
+			}
 		},
 		server: {
 			get: function () {
 				return this._server;
-			},
-			configurable: true
+			}
 		},
 		model: {
 			value: function model(name, schema, options, callback) {
@@ -102,9 +100,7 @@ var Connection = (function (EventEmitter) {
 				});
 
 				return this._models[name].DocumentClass;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		modelNames: {
 
@@ -114,23 +110,18 @@ var Connection = (function (EventEmitter) {
 
 			value: function modelNames() {
 				return Object.keys(this._models);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		readyState: {
 			get: function () {
 				return this._readyState;
-			},
-			configurable: true
+			}
 		},
 		_registerBasicModels: {
 			value: function _registerBasicModels() {
 				this.model("V", new SchemaV(), { ensure: false });
 				this.model("E", new SchemaE(), { ensure: false });
-			},
-			writable: true,
-			configurable: true
+			}
 		}
 	});
 

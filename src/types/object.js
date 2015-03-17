@@ -1,10 +1,10 @@
 import Type from './type';
 
 export default class ObjectType extends Type {
-	constructor(data, options) {
-		super(data, options);
+	constructor(data, prop) {
+		super(data, prop);
 
-		this._schema = options.type;
+		this._schema = prop.type;
 		this._value = new this._schema.DataClass();
 	}
 
@@ -35,5 +35,9 @@ export default class ObjectType extends Type {
 
 	static getDbType(options) {
 		return 'EMBEDDED';
+	}
+
+	static get isObject() {
+		return true;
 	}
 }

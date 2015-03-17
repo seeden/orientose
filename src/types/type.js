@@ -1,8 +1,13 @@
 export default class Type {
-	constructor (data, options) {
-		options = options || {};
+	constructor (data, prop) {
+		if(!data || !prop) {
+			throw new Error('Data or prop is undefined');
+		}
+
+		var options = prop.options || {};
 
 		this._data     = data;
+		this._prop     = prop;
 		this._options  = options;
 
 		this._default  = options.default;
@@ -21,6 +26,11 @@ export default class Type {
 	get options() {
 		return this._options;
 	}
+
+	get prop() {
+		return this._prop;
+	}
+
 
 	get isMetadata() {
 		return !!this.options.metadata;

@@ -12,7 +12,7 @@ var Schema = _interopRequire(require("../index"));
 
 var RID = _interopRequire(require("../../types/rid"));
 
-var OrientSchema = (function (Schema) {
+var OrientSchema = (function (_Schema) {
 	function OrientSchema(props, options) {
 		_classCallCheck(this, OrientSchema);
 
@@ -33,7 +33,7 @@ var OrientSchema = (function (Schema) {
 		});
 	}
 
-	_inherits(OrientSchema, Schema);
+	_inherits(OrientSchema, _Schema);
 
 	return OrientSchema;
 })(Schema);

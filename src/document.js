@@ -101,6 +101,10 @@ export default class Document extends EventEmitter {
 		});
 	}
 
+	static findById(id, callback) {
+		this.findByRid(id, callback);
+	}
+
 	static findByRid(rid, callback) {
 		return this.model.findByRid(rid, callback);
 	}

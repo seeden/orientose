@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -14,66 +14,34 @@ var Type = _interopRequire(require("./type"));
 
 var Schema = _interopRequire(require("../schemas/index"));
 
-var ArrayType = (function (Type) {
-	function ArrayType(data, options) {
+var ArrayType = (function (_Type) {
+	function ArrayType(data, prop) {
 		_classCallCheck(this, ArrayType);
 
-		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, options);
+		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, prop);
 
-		if (!options.type) {
+		if (!prop.item) {
 			throw new Error("Type of the array item is not defined");
 		}
-
-		this._itemSchemaType = options.type.schemaType;
-		this._itemOptions = options.type.options;
 
 		this._value = [];
 	}
 
-	_inherits(ArrayType, Type);
+	_inherits(ArrayType, _Type);
 
-	_prototypeProperties(ArrayType, {
-		getDbType: {
-			value: function getDbType(options) {
-				return "EMBEDDEDLIST";
-			},
-			writable: true,
-			configurable: true
-		},
-		getPropertyConfig: {
-			value: function getPropertyConfig(options) {
-				var item = options.type;
-
-				return {
-					linkedType: item.schemaType.getDbType(item.options)
-				};
-			},
-			writable: true,
-			configurable: true
-		},
-		isArray: {
-			get: function () {
-				return true;
-			},
-			configurable: true
-		}
-	}, {
+	_createClass(ArrayType, {
 		_createItem: {
 			value: function _createItem(value) {
-				var item = new this._itemSchemaType(this.data, this._itemOptions);
+				var item = new this.prop.item.schemaType(this.data, this.prop.item);
 				item.value = value;
 
 				return item;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_empty: {
 			value: function _empty() {
 				this._value = [];
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_serialize: {
 			value: function _serialize(items) {
@@ -86,55 +54,62 @@ var ArrayType = (function (Type) {
 				});
 
 				return this._value;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_deserialize: {
 			value: function _deserialize() {
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		set: {
 			value: function set(index, value) {
 				return this._value[index] = this._createItem(value);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		push: {
 			value: function push(value) {
 				return this._value.push(this._createItem(value));
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		pop: {
 			value: function pop() {
 				var item = this._value.pop();
 				return item ? item.value : item;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		toJSON: {
 			value: function toJSON(options) {
 				return this._value.map(function (item) {
 					return item.toJSON(options);
 				});
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		isModified: {
 			get: function () {
 				var jsonCurrent = JSON.stringify(this.toJSON());
 				var jsonOriginal = JSON.stringify(this.original);
 				return jsonCurrent === jsonOriginal;
-			},
-			configurable: true
+			}
+		}
+	}, {
+		getDbType: {
+			value: function getDbType(options) {
+				return "EMBEDDEDLIST";
+			}
+		},
+		getPropertyConfig: {
+			value: function getPropertyConfig(propOptions) {
+				var item = propOptions.item;
+
+				return {
+					linkedType: item.schemaType.getDbType(item.options)
+				};
+			}
+		},
+		isArray: {
+			get: function () {
+				return true;
+			}
 		}
 	});
 

@@ -1,16 +1,21 @@
 "use strict";
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 var Type = (function () {
-	function Type(data, options) {
+	function Type(data, prop) {
 		_classCallCheck(this, Type);
 
-		options = options || {};
+		if (!data || !prop) {
+			throw new Error("Data or prop is undefined");
+		}
+
+		var options = prop.options || {};
 
 		this._data = data;
+		this._prop = prop;
 		this._options = options;
 
 		this._default = options["default"];
@@ -18,51 +23,31 @@ var Type = (function () {
 		this._original = void 0;
 	}
 
-	_prototypeProperties(Type, {
-		getDbType: {
-			value: function getDbType(options) {
-				throw new Error("You need to override getter dbType");
-			},
-			writable: true,
-			configurable: true
-		},
-		isSchemaType: {
-			get: function () {
-				return true;
-			},
-			configurable: true
-		},
-		getPropertyConfig: {
-			value: function getPropertyConfig(options) {
-				return {};
-			},
-			writable: true,
-			configurable: true
-		}
-	}, {
+	_createClass(Type, {
 		data: {
 			get: function () {
 				return this._data;
-			},
-			configurable: true
+			}
 		},
 		original: {
 			get: function () {
 				return this._original;
-			},
-			configurable: true
+			}
 		},
 		options: {
 			get: function () {
 				return this._options;
-			},
-			configurable: true
+			}
+		},
+		prop: {
+			get: function () {
+				return this._prop;
+			}
 		},
 		isMetadata: {
 			get: function () {
 				return !!this.options.metadata;
-			},
-			configurable: true
+			}
 		},
 		value: {
 			set: function (value) {
@@ -80,30 +65,23 @@ var Type = (function () {
 				}
 
 				return this._deserialize(this._serialize(defaultValue));
-			},
-			configurable: true
+			}
 		},
 		_serialize: {
 			value: function _serialize(value) {
 				throw new Error("You need to override _serialize");
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_deserialize: {
 			value: function _deserialize(value) {
 				throw new Error("You need to override _deserialize");
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		setAsOriginal: {
 			value: function setAsOriginal() {
 				this._original = this.value;
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		rollback: {
 			value: function rollback() {
@@ -113,15 +91,12 @@ var Type = (function () {
 
 				this.value = this.original;
 				return this;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		isModified: {
 			get: function () {
 				return this.original !== this.value;
-			},
-			configurable: true
+			}
 		},
 		setupData: {
 			value: function setupData(data) {
@@ -129,16 +104,28 @@ var Type = (function () {
 				this._original = this.value;
 
 				//parent.childChanged(this);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		toJSON: {
 			value: function toJSON() {
 				return this.value;
-			},
-			writable: true,
-			configurable: true
+			}
+		}
+	}, {
+		getDbType: {
+			value: function getDbType(options) {
+				throw new Error("You need to override getter dbType");
+			}
+		},
+		isSchemaType: {
+			get: function () {
+				return true;
+			}
+		},
+		getPropertyConfig: {
+			value: function getPropertyConfig(options) {
+				return {};
+			}
 		}
 	});
 

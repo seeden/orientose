@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
@@ -14,37 +14,18 @@ var StringType = _interopRequire(require("./string"));
 
 var _ = _interopRequire(require("lodash"));
 
-var RIDType = (function (StringType) {
+var RIDType = (function (_StringType) {
 	function RIDType() {
 		_classCallCheck(this, RIDType);
 
-		if (StringType != null) {
-			StringType.apply(this, arguments);
+		if (_StringType != null) {
+			_StringType.apply(this, arguments);
 		}
 	}
 
-	_inherits(RIDType, StringType);
+	_inherits(RIDType, _StringType);
 
-	_prototypeProperties(RIDType, {
-		getDbType: {
-			value: function getDbType(options) {
-				return "LINK";
-			},
-			writable: true,
-			configurable: true
-		},
-		objectToString: {
-			value: function objectToString(obj) {
-				if (obj && typeof obj.cluster !== "undefined" && typeof obj.position !== "undefined") {
-					return "#" + obj.cluster + ":" + obj.position;
-				}
-
-				return null;
-			},
-			writable: true,
-			configurable: true
-		}
-	}, {
+	_createClass(RIDType, {
 		_serialize: {
 			value: function _serialize(value) {
 				if (_.isPlainObject(value)) {
@@ -54,9 +35,22 @@ var RIDType = (function (StringType) {
 				}
 
 				return _get(Object.getPrototypeOf(RIDType.prototype), "_serialize", this).call(this, value);
-			},
-			writable: true,
-			configurable: true
+			}
+		}
+	}, {
+		getDbType: {
+			value: function getDbType(options) {
+				return "LINK";
+			}
+		},
+		objectToString: {
+			value: function objectToString(obj) {
+				if (obj && typeof obj.cluster !== "undefined" && typeof obj.position !== "undefined") {
+					return "#" + obj.cluster + ":" + obj.position;
+				}
+
+				return null;
+			}
 		}
 	});
 

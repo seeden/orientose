@@ -7,12 +7,6 @@ import convertType from '../types/convert';
 import MixedType from '../types/mixed';
 import IndexType from '../constants/indextype';
 
-/*
-{
-	extend: 'V'
-}
-*/
-
 export default class Schema extends EventEmitter {
 	constructor(props, options) {
 		super();
@@ -43,6 +37,10 @@ export default class Schema extends EventEmitter {
 		return this._hooks;
 	}
 
+	get options() {
+		return this._options;
+	}	
+
 	get DataClass() {
 		if(!this._dataClass) {
 			this._dataClass = Data.createClass(this);
@@ -55,10 +53,7 @@ export default class Schema extends EventEmitter {
 			throw new Error('Props is not an object');
 		}
 
-		for(var propName in props) {
-			this.set(propName, props[propName]);
-		}
-
+		Object.keys(props).forEach(propName => this.setPath(propName, props[propName]));
 		return this;
 	}
 
@@ -69,7 +64,6 @@ export default class Schema extends EventEmitter {
 
 		return props.join('_');
 	}
-
 
 	index(properties, options) {
 		options = options || {};
@@ -126,40 +120,44 @@ export default class Schema extends EventEmitter {
 		return Object.keys(this._indexes);
 	}
 
-	/**
-	*/
+	get(key) {
+		return this.options[key];
+	}
 
-	get(propName) {
-		var pos = propName.indexOf('.');
+	set(key, value) {
+		this.options[key] = value;
+		return this;
+	}	
+
+	getSchemaType(path) {
+		var prop = this.getPath(path);
+		return prop ? prop.schemaType : void 0;
+	}	
+
+	getPath(path, stopOnArray) {
+		var pos = path.indexOf('.');
 		if(pos === -1) {
-			if(!this._props[propName]) {
-				return;
-			}
-
-			return this._props[propName].options;
+			return this._props[path];
 		}
 
-		var nextPath = propName.substr(pos + 1);
-		propName = propName.substr(0, pos);
+		var subPath = path.substr(pos + 1);
+		var propName = path.substr(0, pos);
 
 		var prop = this._props[propName];
 		if(!prop) {
-			return;
+			return prop;
 		}
 
-		var type = prop.options.type;
-		if(!type.isSchema) {
-			return;
+		if (prop.type.isSchema) {
+			return prop.type.getPath(subPath);
 		}
 
-		return type.get(nextPath);
+		if (!stopOnArray && prop.item && prop.item.type.isSchema) {
+			return prop.item.type.getPath(subPath);
+		}
 	}
 
-	getSchemaType(property) {
-		return this._props[property].schemaType;
-	}	
-
-	set(propName, options) {
+	setPath(path, options) {
 		// ignore {_id: false}
 		if(options === false) {
 			return this;
@@ -167,21 +165,21 @@ export default class Schema extends EventEmitter {
 
 		options = options || {};
 		
-		var pos = propName.indexOf('.');
+		var pos = path.indexOf('.');
 		if(pos === -1) {
-			var normalizedOptions = Schema.normalizeOptions(options);
+			var normalizedOptions = this.normalizeOptions(options);
 			if(!normalizedOptions) {
 				return this;
 			}
 
-			this._props[propName] = normalizedOptions;
+			this._props[path] = normalizedOptions;
 
 			if(!options.index)  {
 				return this;
 			}
 
 			this.index({
-				[propName]: propName
+				[path]: path
 			}, {
 				name   : options.indexName,
 				unique : options.unique,
@@ -192,20 +190,14 @@ export default class Schema extends EventEmitter {
 			return this;
 		}
 
-		var nextPath = propName.substr(pos + 1);
-		propName = propName.substr(0, pos);
+		var subPath = path.substr(pos + 1);
+		var propName = path.substr(0, pos);
 
 		var prop = this._props[propName];
-		if(!prop) {
-			return this;
+		if(prop && prop.type.isSchema) {
+			prop.type.setPath(subPath, options);
 		}
 
-		var type = prop.options.type;
-		if(!type.isSchema) {
-			return this;
-		}
-
-		type.set(nextPath, options);
 		return this;
 	}
 
@@ -241,54 +233,47 @@ export default class Schema extends EventEmitter {
 		return this;
 	}
 
-	virtual(name, options) {
+	virtual(path, options) {
 		options = options || {};
 
-		var pos = name.indexOf('.');
+		var schema = this;
+		var pos = path.indexOf('.');
 		if(pos !== -1) {
-			var field = name.substr(0, pos);
-			var nextField = name.substr(pos + 1);
+			var subPaths = path.split('.');
+			var path = subPaths.pop();
 
-			var prop = this._props[field];
-			if(!prop) {
-				throw new Error('Field does not exists ' + field);
+			var prop = this.getPath(subPaths.join('.'));
+			if(!prop || !prop.type || !prop.type.isSchema) {
+				throw new Error('Field does not exists ' + subPaths.join('.'));
 			}
 
-			var type = prop.options.type;
-			if(_.isArray(type)) {
-				type = type.options.type;
-			}
-
-			if(!type.isSchema) {
-				throw new Error('Field is not an object ' + field);
-			}
-
-			return type.virtual(nextField, options);
+			return prop.type.virtual(path, options);
 		}
 
+		if(this._virtuals[path]) {
+			return this._virtuals[path].getset;
+		}
 
-		if(!this._virtuals[name]) {
-			this._virtuals[name] = {
-				schemaType : VirtualType,
-				options    : options,
-				getset     : {
-					get: function(fn) {
-						options.get = fn;
-						return this;
-					},
-					set: function(fn) {
-						options.set = fn;
-						return this;
-					}
+		var virtual = this._virtuals[path] = {
+			schemaType : VirtualType,
+			options    : options,
+			getset     : {
+				get: function(fn) {
+					options.get = fn;
+					return this;
+				},
+				set: function(fn) {
+					options.set = fn;
+					return this;
 				}
 			}
 		}
 
-		return this._virtuals[name].getset;
+		return virtual.getset;
 	}
 
 	alias(to, from) {
-		this.virtual(from).get(function(){
+		this.virtual(from).get(function() {
 			return this[to];
 		}).set(function(value){
 			this[to] = value;
@@ -307,43 +292,6 @@ export default class Schema extends EventEmitter {
 		return this;
 	}
 
-	traverse(fn, traverseChildren, skipObjects, parentPath) {
-		var props    = this._props;
-		var virtuals = this._virtuals;
-
-
-		for(var name in props) {
-			if(!props.hasOwnProperty(name)) {
-				continue;
-			}
-
-			var prop = props[name];
-			var currentPath = parentPath ?  parentPath + '.' + name : name;
-			var propType = prop.options.type;
-			var isSchema = propType && propType.isSchema;
-
-			fn(name, prop, currentPath, false);
-
-			if(traverseChildren && isSchema) {
-				propType.traverse(fn, traverseChildren, skipObjects, currentPath);
-			}
-		}
-
-		//traverse virtual poroperties
-		for(var name in virtuals) {
-			if(!virtuals.hasOwnProperty(name)) {
-				continue;
-			}
-
-			var prop = virtuals[name];
-			var currentPath = parentPath ?  parentPath + '.' + name : name;
-
-			fn(name, prop, currentPath, true);
-		}		
-
-		return this;
-	}
-
 	plugin(pluginFn, options) {
 		options = options || {};
 
@@ -355,35 +303,83 @@ export default class Schema extends EventEmitter {
 		return true;
 	}
 
-	path(path, options) {
-		if(typeof options !== 'undefined') {
-			this.set(path, options);
-			return this;
-		} 
+	path(path, ...args) {
+		if(args.length === 0) {
+			var prop = this.getPath(path, true);
+			if(!prop) {
+				return prop;
+			}
 
-		return this.get(path).type;
+			return Schema.toMongoose(prop, path);
+		}
+
+		this.setPath(path, args[0]);
+		return this;
 	}
+
+	traverse(fn, traverseChildren, parentPath) {
+		var props    = this._props;
+		var virtuals = this._virtuals;
+
+		Object.keys(props).forEach(function(name) {
+			var prop = props[name];
+			var path = parentPath ?  parentPath + '.' + name : name;
+
+			var canTraverseChildren = fn(name, prop, path, false);
+			if(canTraverseChildren === false) {
+				return;
+			}
+
+			if(prop.type.isSchema) {
+				prop.type.traverse(fn, traverseChildren, path);
+			}
+
+			if(prop.item && prop.item.type.isSchema) {
+				prop.item.type.traverse(fn, traverseChildren, path);
+			}
+		});
+
+		//traverse virtual poroperties
+		Object.keys(virtuals).forEach(function(name) {
+			var prop = virtuals[name];
+			var path = parentPath ?  parentPath + '.' + name : name;
+
+			fn(name, prop, path, true);
+		});		
+
+		return this;
+	}	
 
 	eachPath(fn) {
 		this.traverse(function(name, prop, path, isVirtual) {
-			var options = prop.options;
-			var type = options.type;
+			if(isVirtual) {
+				return false;
+			}
 
-			var config = {
-				options: options
-			};
-
-			if(type && type.isSchema) {
-				config.schema = options.type;
+			var config = Schema.toMongoose(prop, path);
+			if(!config) {
+				return;
 			}
 
 			fn(path, config);
-		});
-	}
 
-	static normalizeOptions(options) {
-		if(options === false) {
+			if(prop.item) {
+				return false;
+			}
+		});
+	}	
+
+	normalizeOptions(options) {
+		if(!options) {
 			return null;
+		}
+
+		//convert basic types
+		var basicTypes = [String, Number, Boolean, Date];
+		if(basicTypes.indexOf(options) !== -1) {
+			options = {
+				type: options
+			};
 		}
 
 		//1. convert objects
@@ -400,43 +396,51 @@ export default class Schema extends EventEmitter {
 			};
 		}
 
-		options.type = Schema.normalizeType(options.type);
+		var type = options.isSchema ? options : options.type;
 
-		return {
-			schemaType: convertType(options.type),
-			options: options
-		};
-	}
-
-	static normalizeType(type) {
-		//automatically prepare schema for plain objects
+		//create schema from plain object
 		if(_.isPlainObject(type)) {
 			type = new Schema(type);
 		}
 
+
+		var normalised = {
+			schema     : this,
+			type       : type,
+			schemaType : convertType(type),
+			options    : options
+		};
+
 		if(_.isArray(type)) {
-			if(!type.length) {
-				type = [MixedType]; 
-			} else if(type.length !== 1) {
-				throw new Error('Type of an array item is undefined');
-			}
-
-			var itemOptions = type[0];
-			if(!_.isPlainObject(itemOptions)) {
-				itemOptions = {
-					type: itemOptions
-				};
-			}
-
-			var normalisedOptions = Schema.normalizeOptions(itemOptions);
-			if(!normalisedOptions) {
-				throw new Error('Options is undefined');
-			}
-
-			type.schemaType = normalisedOptions.schemaType;
-			type.options = normalisedOptions.options;
+			var itemOptions = type.length ? type[0] : { type: MixedType };
+			normalised.item = this.normalizeOptions(itemOptions);
 		}
 
-		return type;
+		return normalised;
+	}	
+
+	static toMongoose(prop, path) {
+		var options = prop.options || {};
+
+		if(prop.type.isSchema) {
+			return;
+		}
+
+		var config = {
+			path         : path,
+			setters      : [],
+			getters      : [],
+			options      : options,
+			defaultValue : options.default
+		};
+
+		if(prop.item) {
+			config.instance = 'Array';
+			if(prop.item.type.isSchema) {
+				config.schema = prop.item.type;
+			}
+		}
+
+		return config;
 	}
 }

@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
@@ -16,39 +16,33 @@ var _ = _interopRequire(require("lodash"));
 	Javascript long has support for 53bits only
 */
 
-var LongType = (function (Type) {
+var LongType = (function (_Type) {
 	function LongType() {
 		_classCallCheck(this, LongType);
 
-		if (Type != null) {
-			Type.apply(this, arguments);
+		if (_Type != null) {
+			_Type.apply(this, arguments);
 		}
 	}
 
-	_inherits(LongType, Type);
+	_inherits(LongType, _Type);
 
-	_prototypeProperties(LongType, {
-		getDbType: {
-			value: function getDbType(options) {
-				return "LONG";
-			},
-			writable: true,
-			configurable: true
-		}
-	}, {
+	_createClass(LongType, {
 		_serialize: {
 			value: function _serialize(value) {
 				return String(value);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_deserialize: {
 			value: function _deserialize(value) {
 				return value;
-			},
-			writable: true,
-			configurable: true
+			}
+		}
+	}, {
+		getDbType: {
+			value: function getDbType(options) {
+				return "LONG";
+			}
 		}
 	});
 

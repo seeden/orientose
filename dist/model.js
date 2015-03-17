@@ -2,7 +2,7 @@
 
 var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
@@ -26,8 +26,16 @@ var RidType = _interopRequire(require("./types/rid"));
 
 var extend = _interopRequire(require("node.extend"));
 
-var Model = (function (EventEmitter) {
+var debug = _interopRequire(require("debug"));
+
+var _ = _interopRequire(require("lodash"));
+
+var log = debug("orientose:model");
+
+var Model = (function (_EventEmitter) {
 	function Model(name, schema, connection, options, callback) {
+		var _this = this;
+
 		_classCallCheck(this, Model);
 
 		if (!name) {
@@ -47,6 +55,8 @@ var Model = (function (EventEmitter) {
 			options = {};
 		}
 
+		callback = callback || function () {};
+
 		this._name = name;
 		this._schema = schema;
 		this._connection = connection;
@@ -55,55 +65,58 @@ var Model = (function (EventEmitter) {
 		this._documentClass = Document.createClass(this);
 
 		if (options.ensure !== false) {
-			this._ensureClass(callback);
+			this._ensureClass(function (err, model) {
+				if (err) {
+					log("Model " + _this.name + ": " + err.message);
+				}
+
+				callback(err, model);
+			});
 		}
 	}
 
-	_inherits(Model, EventEmitter);
+	_inherits(Model, _EventEmitter);
 
-	_prototypeProperties(Model, null, {
+	_createClass(Model, {
 		DocumentClass: {
 			get: function () {
 				return this._documentClass;
-			},
-			configurable: true
+			}
 		},
 		name: {
 			get: function () {
 				return this._name;
-			},
-			configurable: true
+			}
 		},
 		schema: {
 			get: function () {
 				return this._schema;
-			},
-			configurable: true
+			}
 		},
 		connection: {
 			get: function () {
 				return this._connection;
-			},
-			configurable: true
+			}
 		},
 		db: {
 			get: function () {
 				return this.connection.db;
-			},
-			configurable: true
+			}
 		},
 		isEdge: {
 			get: function () {
 				return this.schema.isEdge;
-			},
-			configurable: true
+			}
+		},
+		options: {
+			get: function () {
+				return this._options;
+			}
 		},
 		model: {
 			value: function model(name) {
 				return this.connection.model(name);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_ensureIndex: {
 			value: function _ensureIndex(OClass, callback) {
@@ -150,8 +163,14 @@ var Model = (function (EventEmitter) {
 				},
 				//add non exists indexes
 				function (indexes, callback) {
+					var configs = [];
+
 					each(schema.indexNames, function (indexName, callback) {
 						var index = schema.getIndex(indexName);
+
+						//add class name to indexName
+						indexName = className + "." + indexName;
+
 						var oIndex = indexes.find(function (index) {
 							return index.name === indexName;
 						});
@@ -160,12 +179,16 @@ var Model = (function (EventEmitter) {
 							return callback(null);
 						}
 
-						db.index.create({
+						var config = {
 							"class": className,
 							name: indexName,
 							properties: Object.keys(index.properties),
 							type: index.type
-						}).then(function () {
+						};
+
+						configs.push(config);
+
+						db.index.create(config).then(function () {
 							callback(null);
 						}, callback);
 					}, function (err) {
@@ -176,14 +199,13 @@ var Model = (function (EventEmitter) {
 						callback(null, indexes);
 					});
 				}], callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_ensureClass: {
 			value: function _ensureClass(callback) {
 				var _this = this;
 
+				var model = this;
 				var db = this.db;
 				var schema = this.schema;
 				var className = this.name;
@@ -195,7 +217,7 @@ var Model = (function (EventEmitter) {
 					db["class"].get(className).then(function (OClass) {
 						callback(null, OClass);
 					}, function (err) {
-						db["class"].create(className, schema.extendClassName).then(function (OClass) {
+						db["class"].create(className, schema.extendClassName, model.options.cluster, model.options.abstract).then(function (OClass) {
 							callback(null, OClass);
 						}, callback);
 					});
@@ -232,35 +254,60 @@ var Model = (function (EventEmitter) {
 						var prop = oProperties.find(function (p) {
 							return p.name === propName;
 						});
+
 						if (prop) {
 							return callback(null);
 						}
 
-						var options = schema.get(propName);
+						var options = schema.getPath(propName);
 						var schemaType = schema.getSchemaType(propName);
+						var type = schemaType.getDbType(options);
 
 						if (options.metadata || options.ensure === false) {
 							return callback(null);
 						}
 
-						var config = {
-							name: propName,
-							type: schemaType.getDbType(options),
-							mandatory: options.mandatory || options.required || false,
-							min: typeof options.min !== "undefined" ? options.min : null,
-							max: typeof options.max !== "undefined" ? options.max : null,
-							collate: options.collate || "default",
-							notNull: options.notNull || false,
-							readonly: options.readonly || false
-						};
+						waterfall([
+						//create LinkedClass for embedded documents
+						function (callback) {
+							if (type !== "EMBEDDED" || !schemaType.isObject) {
+								return callback(null, null);
+							}
 
-						var additionalConfig = schemaType.getPropertyConfig(options);
-						extend(config, additionalConfig);
+							var modelName = className + "E" + _.capitalize(propName);
 
-						OClass.property.create(config).then(function (oProperty) {
-							oProperties.push(oProperty);
-							callback(null);
-						}, callback);
+							if (modelName === "UserECover") {
+								console.log(options.type);
+							}
+
+							var submodel = new Model(modelName, options.type, model.connection, {
+								abstract: true
+							}, callback);
+						}, function (model, callback) {
+
+							var config = {
+								name: propName,
+								type: schemaType.getDbType(options),
+								mandatory: options.mandatory || options.required || false,
+								min: typeof options.min !== "undefined" ? options.min : null,
+								max: typeof options.max !== "undefined" ? options.max : null,
+								collate: options.collate || "default",
+								notNull: options.notNull || false,
+								readonly: options.readonly || false
+							};
+
+							if (model) {
+								config.linkedClass = model.name;
+							}
+
+							var additionalConfig = schemaType.getPropertyConfig(options);
+							extend(config, additionalConfig);
+
+							OClass.property.create(config).then(function (oProperty) {
+								oProperties.push(oProperty);
+								callback(null);
+							}, callback);
+						}], callback);
 					}, function (err) {
 						if (err) {
 							return callback(err);
@@ -277,9 +324,7 @@ var Model = (function (EventEmitter) {
 
 					callback(null, _this);
 				});
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		_createDocument: {
 			value: function _createDocument(properties) {
@@ -294,9 +339,7 @@ var Model = (function (EventEmitter) {
 				}
 
 				return new model({}).setupData(properties);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		create: {
 			value: function create(properties, callback) {
@@ -325,9 +368,7 @@ var Model = (function (EventEmitter) {
 				}).one().then(function (item) {
 					callback(null, item);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		createEdge: {
 			value: function createEdge(from, to, properties, callback) {
@@ -338,18 +379,14 @@ var Model = (function (EventEmitter) {
 				}).one().then(function (item) {
 					callback(null, item);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		remove: {
 			value: function remove(where, callback) {
 				this.db["delete"]().from(this.name).where(where).scalar().then(function (total) {
 					callback(null, total);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		removeByRid: {
 			value: function removeByRid(rid, callback) {
@@ -365,45 +402,35 @@ var Model = (function (EventEmitter) {
 
 					callback(null, 0);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		removeEdgeByRid: {
 			value: function removeEdgeByRid(rid, callback) {
 				this.db["delete"]("EDGE", rid).scalar().then(function (affectedRows) {
 					callback(null, affectedRows);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		removeVertexByRid: {
 			value: function removeVertexByRid(rid, callback) {
 				this.db["delete"]("VERTEX", rid).scalar().then(function (affectedRows) {
 					callback(null, affectedRows);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		update: {
 			value: function update(where, properties, callback) {
 				this.db.update(this.name).set(properties).where(where).scalar().then(function (total) {
 					callback(null, total);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		updateByRid: {
 			value: function updateByRid(rid, properties, callback) {
 				this.db.update(rid).set(properties).scalar().then(function (total) {
 					callback(null, total);
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		find: {
 			value: function find(where, options, callback) {
@@ -423,9 +450,7 @@ var Model = (function (EventEmitter) {
 				}, function (err) {
 					callback(err);
 				});
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		findOne: {
 			value: function findOne(where, options, callback) {
@@ -445,9 +470,7 @@ var Model = (function (EventEmitter) {
 				}, function (err) {
 					callback(err);
 				});
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		findByRid: {
 			value: function findByRid(rid, callback) {
@@ -456,9 +479,7 @@ var Model = (function (EventEmitter) {
 				this.db.record.get(rid).then(function (record) {
 					callback(null, _this._createDocument(record));
 				}, callback);
-			},
-			writable: true,
-			configurable: true
+			}
 		}
 	});
 

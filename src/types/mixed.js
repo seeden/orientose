@@ -10,6 +10,6 @@ export default class MixedType extends Type {
 	}
 
 	static getDbType(options) {
-		return null;
+		return void 0;
 	}
 }

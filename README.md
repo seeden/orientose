@@ -216,7 +216,7 @@ User.find({
 });	
 ```
 
-#### Model.findByRid
+#### Model.findByRid (alias Model.findById)
 Finds a single document by rid.
 
 ```js

@@ -2,21 +2,18 @@ import Type from './type';
 import Schema from '../schemas/index';
 
 export default class ArrayType extends Type {
-	constructor(data, options) {
-		super(data, options);
+	constructor(data, prop) {
+		super(data, prop);
 
-		if(!options.type) {
+		if(!prop.item) {
 			throw new Error('Type of the array item is not defined');
 		}
-
-		this._itemSchemaType = options.type.schemaType;
-		this._itemOptions = options.type.options;
 
 		this._value = [];
 	}
 
 	_createItem(value) {
-		var item = new this._itemSchemaType(this.data, this._itemOptions);
+		var item = new this.prop.item.schemaType(this.data, this.prop.item);
 		item.value = value;
 
 		return item;
@@ -69,8 +66,8 @@ export default class ArrayType extends Type {
 		return 'EMBEDDEDLIST';
 	}
 
-	static getPropertyConfig(options) {
-		var item = options.type;
+	static getPropertyConfig(propOptions) {
+		var item = propOptions.item;
 
 		return {
 			linkedType: item.schemaType.getDbType(item.options)

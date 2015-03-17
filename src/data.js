@@ -1,6 +1,9 @@
 import Schema from './schemas/index';
 import _ from 'lodash';
 import VirtualType from './types/virtual';
+import debug from 'debug';
+
+const log = debug('orientose:data');
 
 export default class Data {
 	constructor(schema, properties) {
@@ -10,7 +13,7 @@ export default class Data {
 		this._data = {};	
 
 		schema.traverse((propName, prop) => {
-			this._data[propName] = new prop.schemaType(this, prop.options);
+			this._data[propName] = new prop.schemaType(this, prop);
 		});	
 
 		this.set(properties);
@@ -37,7 +40,7 @@ export default class Data {
 		return json;
 	}
 
-	get (path) {
+	get(path) {
 		var pos = path.indexOf('.');
 		if(pos === -1) {
 			return this._data[path].value;
@@ -66,7 +69,7 @@ export default class Data {
 		if(pos === -1) {
 			var property = this._data[path];
 			if(!property) {
-				console.log('Path not exists:' + path);
+				log('Path not exists:' + path);
 				return this;
 			}
 			

@@ -6,7 +6,7 @@ var _get = function get(object, property, receiver) { var desc = Object.getOwnPr
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _prototypeProperties = function (child, staticProps, instanceProps) { if (staticProps) Object.defineProperties(child, staticProps); if (instanceProps) Object.defineProperties(child.prototype, instanceProps); };
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
@@ -15,6 +15,10 @@ var Schema = _interopRequire(require("./schemas/index"));
 var _ = _interopRequire(require("lodash"));
 
 var VirtualType = _interopRequire(require("./types/virtual"));
+
+var debug = _interopRequire(require("debug"));
+
+var log = debug("orientose:data");
 
 var Data = (function () {
 	function Data(schema, properties) {
@@ -28,50 +32,13 @@ var Data = (function () {
 		this._data = {};
 
 		schema.traverse(function (propName, prop) {
-			_this._data[propName] = new prop.schemaType(_this, prop.options);
+			_this._data[propName] = new prop.schemaType(_this, prop);
 		});
 
 		this.set(properties);
 	}
 
-	_prototypeProperties(Data, {
-		createClass: {
-			value: function createClass(schema) {
-				var DataClass = (function (Data) {
-					function DataClass(properties, callback) {
-						_classCallCheck(this, DataClass);
-
-						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties);
-						this._callback = callback || function () {};
-					}
-
-					_inherits(DataClass, Data);
-
-					return DataClass;
-				})(Data);
-
-				;
-
-				//define properties
-				schema.traverse(function (fieldName) {
-					Object.defineProperty(DataClass.prototype, fieldName, {
-						enumerable: true,
-						configurable: true,
-						get: function get() {
-							return this.get(fieldName);
-						},
-						set: function set(value) {
-							return this.set(fieldName, value);
-						}
-					});
-				});
-
-				return DataClass;
-			},
-			writable: true,
-			configurable: true
-		}
-	}, {
+	_createClass(Data, {
 		toJSON: {
 			value: function toJSON(options) {
 				var json = {};
@@ -92,9 +59,7 @@ var Data = (function () {
 				}
 
 				return json;
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		get: {
 			value: function get(path) {
@@ -112,9 +77,7 @@ var Data = (function () {
 				}
 
 				return data.get(newPath);
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		set: {
 			value: function set(path, value, setAsOriginal) {
@@ -129,7 +92,7 @@ var Data = (function () {
 				if (pos === -1) {
 					var property = this._data[path];
 					if (!property) {
-						console.log("Path not exists:" + path);
+						log("Path not exists:" + path);
 						return this;
 					}
 
@@ -162,16 +125,47 @@ var Data = (function () {
     		}
     
     		return this;*/
-			},
-			writable: true,
-			configurable: true
+			}
 		},
 		setupData: {
 			value: function setupData(properties) {
 				this.set(properties, null, true);
-			},
-			writable: true,
-			configurable: true
+			}
+		}
+	}, {
+		createClass: {
+			value: function createClass(schema) {
+				var DataClass = (function (_Data) {
+					function DataClass(properties, callback) {
+						_classCallCheck(this, DataClass);
+
+						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties);
+						this._callback = callback || function () {};
+					}
+
+					_inherits(DataClass, _Data);
+
+					return DataClass;
+				})(Data);
+
+				;
+
+				//define properties
+				schema.traverse(function (fieldName) {
+					Object.defineProperty(DataClass.prototype, fieldName, {
+						enumerable: true,
+						configurable: true,
+						get: function get() {
+							return this.get(fieldName);
+						},
+						set: function set(value) {
+							return this.set(fieldName, value);
+						}
+					});
+				});
+
+				return DataClass;
+			}
 		}
 	});
 

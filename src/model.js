@@ -1,10 +1,14 @@
 import { EventEmitter } from 'events';
 import Schema from './schemas/index';
 import Document from './document';
-import {waterfall, each, serial} from 'async';
+import { waterfall, each, serial } from 'async';
 import convertType from './types/convert';
 import RidType from './types/rid';
 import extend from 'node.extend';
+import debug from 'debug';
+import _ from 'lodash';
+
+const log = debug('orientose:model');
 
 export default class Model extends EventEmitter {
 	constructor (name, schema, connection, options, callback) {
@@ -25,6 +29,8 @@ export default class Model extends EventEmitter {
 			options = {};
 		}
 
+		callback = callback || function() {};
+
 		this._name = name;
 		this._schema = schema;
 		this._connection = connection;
@@ -33,7 +39,13 @@ export default class Model extends EventEmitter {
 		this._documentClass = Document.createClass(this);
 
 		if(options.ensure !== false) {
-			this._ensureClass(callback);	
+			this._ensureClass((err, model) => {
+				if(err) {
+					log('Model ' + this.name + ': ' + err.message);
+				}
+
+				callback(err, model);
+			});	
 		}
 	}
 
@@ -59,6 +71,10 @@ export default class Model extends EventEmitter {
 
 	get isEdge() {
 		return this.schema.isEdge;
+	}
+
+	get options() {
+		return this._options;
 	}
 
 	model(name) {
@@ -89,7 +105,7 @@ export default class Model extends EventEmitter {
 			//remove unused indexes
 			function(indexes, callback) {
 				each(indexes, function(index, callback) {
-					var {definition, type, name} = index;
+					var { definition, type, name } = index;
 
 					if(schema.hasIndex(name)) {
 						return callback(null);
@@ -108,20 +124,32 @@ export default class Model extends EventEmitter {
 			},
 			//add non exists indexes
 			function(indexes, callback) {
+				var configs = [];
+
 				each(schema.indexNames, function(indexName, callback) {
 					var index = schema.getIndex(indexName);
-					var oIndex = indexes.find(index => index.name === indexName);
+
+					//add class name to indexName
+					indexName = className + '.' + indexName;
+
+					var oIndex = indexes.find(function(index) {
+						return index.name === indexName;
+					});
 
 					if(oIndex) {
 						return callback(null);
 					}
 
-					db.index.create({
+					var config = {
 						'class'    : className, 
 						name       : indexName,
 						properties : Object.keys(index.properties),
 						type       : index.type
-					}).then(function() {
+					};
+
+					configs.push(config);
+
+					db.index.create(config).then(function() {
 						callback(null);
 					}, callback);
 				}, function(err) {
@@ -136,6 +164,7 @@ export default class Model extends EventEmitter {
 	}
 
 	_ensureClass(callback) {
+		var model = this;
 		var db = this.db;
 		var schema = this.schema;
 		var className = this.name;
@@ -147,7 +176,7 @@ export default class Model extends EventEmitter {
 				db.class.get(className).then(function(OClass) {
 					callback(null, OClass);
 				}, function(err) {
-					db.class.create(className, schema.extendClassName).then(function(OClass) {
+					db.class.create(className, schema.extendClassName, model.options.cluster, model.options.abstract).then(function(OClass) {
 						callback(null, OClass);
 					}, callback);
 				});
@@ -181,36 +210,66 @@ export default class Model extends EventEmitter {
 				var properties = schema.propertyNames();
 
 				each(properties, function(propName, callback) {
-					var prop = oProperties.find(p => p.name === propName);
+					var prop = oProperties.find(function(p) {
+						return p.name === propName;
+					});
+
 					if(prop)  {
 						return callback(null);
 					}
 
-					var options = schema.get(propName);
+					var options = schema.getPath(propName);
 					var schemaType = schema.getSchemaType(propName);
+					var type = schemaType.getDbType(options);
 
 					if(options.metadata || options.ensure === false) {
 						return callback(null);
 					}
 
-					var config = {
-						name: propName,
-						type: schemaType.getDbType(options),
-						mandatory: options.mandatory || options.required || false,
-						min: typeof options.min !== 'undefined' ? options.min : null,
-						max: typeof options.max !== 'undefined' ? options.max : null,
-						collate: options.collate || 'default',
-						notNull: options.notNull || false,
-						readonly : options.readonly  || false
-					};
+					waterfall([
+						//create LinkedClass for embedded documents
+						function(callback) { 
+							if(type !== 'EMBEDDED' || !schemaType.isObject) {
+								return callback(null, null);
+							}
 
-					var additionalConfig = schemaType.getPropertyConfig(options);
-					extend(config, additionalConfig);
+							var modelName = className + 'E' + _.capitalize(propName);
 
-					OClass.property.create(config).then(function(oProperty) {
-						oProperties.push(oProperty);
-						callback(null);
-					}, callback);
+							if(modelName === 'UserECover') {
+								console.log(options.type);
+							}
+
+							var submodel = new Model(modelName, options.type, model.connection, {
+								abstract: true
+							}, callback);
+						}, function(model, callback) {
+
+							var config = {
+								name: propName,
+								type: schemaType.getDbType(options),
+								mandatory: options.mandatory || options.required || false,
+								min: typeof options.min !== 'undefined' ? options.min : null,
+								max: typeof options.max !== 'undefined' ? options.max : null,
+								collate: options.collate || 'default',
+								notNull: options.notNull || false,
+								readonly : options.readonly  || false
+							};
+
+							if(model) {
+								config.linkedClass = model.name;
+							}
+
+							var additionalConfig = schemaType.getPropertyConfig(options);
+							extend(config, additionalConfig);
+
+							OClass.property.create(config).then(function(oProperty) {
+								oProperties.push(oProperty);
+								callback(null);
+							}, callback);
+
+
+						}
+					], callback);
 				}, function(err) {
 					if(err) {
 						return callback(err);
