@@ -40,6 +40,11 @@ var IntegerType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Integer";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "INTEGER";

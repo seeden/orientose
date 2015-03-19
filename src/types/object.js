@@ -37,6 +37,10 @@ export default class ObjectType extends Type {
 		return 'EMBEDDED';
 	}
 
+	static toString() {
+		return 'Object';
+	}		
+
 	static get isObject() {
 		return true;
 	}

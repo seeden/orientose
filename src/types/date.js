@@ -16,6 +16,10 @@ export default class DateType extends Type {
 			: value.value;
 	}
 
+	static toString() {
+		return 'Date';
+	}		
+
 	static getDbType(options) {
 		return 'DATETIME';
 	}

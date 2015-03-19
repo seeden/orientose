@@ -39,6 +39,11 @@ var LongType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Long";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "LONG";

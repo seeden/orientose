@@ -39,6 +39,11 @@ var StringType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "String";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "STRING";

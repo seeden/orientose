@@ -62,6 +62,10 @@ export default class ArrayType extends Type {
 		return jsonCurrent === jsonOriginal;
 	}	
 
+	static toString() {
+		return 'Array';
+	}
+
 	static getDbType(options) {
 		return 'EMBEDDEDLIST';
 	}

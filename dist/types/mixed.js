@@ -33,6 +33,11 @@ var MixedType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Mixed";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return void 0;

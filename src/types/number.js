@@ -9,6 +9,10 @@ export default class NumberType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'Number';
+	}	
+
 	static getDbType(options) {
 		return 'DOUBLE';
 	}

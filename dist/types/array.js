@@ -92,6 +92,11 @@ var ArrayType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Array";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "EMBEDDEDLIST";

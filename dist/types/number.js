@@ -33,6 +33,11 @@ var NumberType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Number";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "DOUBLE";

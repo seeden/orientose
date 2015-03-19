@@ -42,6 +42,11 @@ var BooleanType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Boolean";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "BOOLEAN";

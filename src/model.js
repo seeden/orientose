@@ -218,35 +218,41 @@ export default class Model extends EventEmitter {
 						return callback(null);
 					}
 
-					var options = schema.getPath(propName);
+					var schemaProp = schema.getPath(propName);
 					var schemaType = schema.getSchemaType(propName);
-					var type = schemaType.getDbType(options);
+					var type = schemaType.getDbType(schemaProp.options);
 
-					if(options.metadata || options.ensure === false) {
+					if(schemaProp.options.metadata || schemaProp.options.ensure === false) {
 						return callback(null);
 					}
 
 					waterfall([
 						//create LinkedClass for embedded documents
 						function(callback) { 
-							if(type !== 'EMBEDDED' || !schemaType.isObject) {
-								return callback(null, null);
+							if(type === 'EMBEDDED' && schemaType.isObject) {
+								var modelName = className + 'A' + _.capitalize(propName);
+
+								return new Model(modelName, schemaProp.type, model.connection, {
+									abstract: true
+								}, callback);
+							} else if(type === 'EMBEDDEDLIST' && schemaType.isArray && schemaProp.item) {
+								var item = schemaProp.item;
+								if(item.schemaType.isObject) {
+									var modelName = className + 'A' + _.capitalize(propName);
+
+									return new Model(modelName, item.type, model.connection, {
+										abstract: true
+									}, callback);
+								}
 							}
 
-							var modelName = className + 'E' + _.capitalize(propName);
-
-							if(modelName === 'UserECover') {
-								console.log(options.type);
-							}
-
-							var submodel = new Model(modelName, options.type, model.connection, {
-								abstract: true
-							}, callback);
+							callback(null, null);
 						}, function(model, callback) {
+							var options = schemaProp.options;
 
 							var config = {
 								name: propName,
-								type: schemaType.getDbType(options),
+								type: type,
 								mandatory: options.mandatory || options.required || false,
 								min: typeof options.min !== 'undefined' ? options.min : null,
 								max: typeof options.max !== 'undefined' ? options.max : null,
@@ -255,19 +261,21 @@ export default class Model extends EventEmitter {
 								readonly : options.readonly  || false
 							};
 
+							var additionalConfig = schemaType.getPropertyConfig(schemaProp);
+							extend(config, additionalConfig);
+
 							if(model) {
+								if(config.linkedType) {
+									delete config.linkedType;
+								}
+
 								config.linkedClass = model.name;
 							}
-
-							var additionalConfig = schemaType.getPropertyConfig(options);
-							extend(config, additionalConfig);
 
 							OClass.property.create(config).then(function(oProperty) {
 								oProperties.push(oProperty);
 								callback(null);
 							}, callback);
-
-
 						}
 					], callback);
 				}, function(err) {

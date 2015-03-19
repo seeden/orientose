@@ -112,6 +112,11 @@ var Type = (function () {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				throw new Error("Method toString is not defined");
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				throw new Error("You need to override getter dbType");

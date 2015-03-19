@@ -18,6 +18,10 @@ export default class BooleanType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'Boolean';
+	}	
+
 	static getDbType(options) {
 		return 'BOOLEAN';
 	}

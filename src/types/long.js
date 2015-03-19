@@ -14,6 +14,10 @@ export default class LongType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'Long';
+	}
+
 	static getDbType(options) {
 		return 'LONG';
 	}

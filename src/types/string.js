@@ -15,6 +15,10 @@ export default class StringType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'String';
+	}
+
 	static getDbType(options) {
 		return 'STRING';
 	}

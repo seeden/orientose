@@ -61,6 +61,11 @@ var ObjectType = (function (_Type) {
 				return "EMBEDDED";
 			}
 		},
+		toString: {
+			value: function toString() {
+				return "Object";
+			}
+		},
 		isObject: {
 			get: function () {
 				return true;

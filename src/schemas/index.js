@@ -6,6 +6,9 @@ import Data from '../data';
 import convertType from '../types/convert';
 import MixedType from '../types/mixed';
 import IndexType from '../constants/indextype';
+import debug from 'debug';
+
+const log = debug('orientose:schema');
 
 export default class Schema extends EventEmitter {
 	constructor(props, options) {
@@ -167,7 +170,13 @@ export default class Schema extends EventEmitter {
 		
 		var pos = path.indexOf('.');
 		if(pos === -1) {
-			var normalizedOptions = this.normalizeOptions(options);
+			try {
+				var normalizedOptions = this.normalizeOptions(options);
+			} catch(e) {
+				log('Problem with path: ' + path);
+				throw e;
+			}
+
 			if(!normalizedOptions) {
 				return this;
 			}
@@ -243,11 +252,17 @@ export default class Schema extends EventEmitter {
 			var path = subPaths.pop();
 
 			var prop = this.getPath(subPaths.join('.'));
-			if(!prop || !prop.type || !prop.type.isSchema) {
+			if(!prop) {
 				throw new Error('Field does not exists ' + subPaths.join('.'));
 			}
 
-			return prop.type.virtual(path, options);
+			var type = prop.item ? prop.item.type : prop.type;
+
+			if(!type || !type.isSchema) {
+				throw new Error('Field does not exists ' + subPaths.join('.'));
+			}
+
+			return type.virtual(path, options);
 		}
 
 		if(this._virtuals[path]) {
@@ -382,6 +397,13 @@ export default class Schema extends EventEmitter {
 			};
 		}
 
+		//if it is one of our types
+		if(_.isFunction(options)) {
+			options = { 
+				type: options
+			};			
+		}
+
 		//1. convert objects
 		if(_.isPlainObject(options) && (!options.type || options.type.type)) {
 			options = { 
@@ -400,9 +422,10 @@ export default class Schema extends EventEmitter {
 
 		//create schema from plain object
 		if(_.isPlainObject(type)) {
-			type = new Schema(type);
+			type = Object.keys(type).length
+				? new Schema(type)
+				: MixedType;
 		}
-
 
 		var normalised = {
 			schema     : this,
@@ -428,6 +451,7 @@ export default class Schema extends EventEmitter {
 
 		var config = {
 			path         : path,
+			instance     : prop.schemaType.toString(),
 			setters      : [],
 			getters      : [],
 			options      : options,
@@ -435,7 +459,6 @@ export default class Schema extends EventEmitter {
 		};
 
 		if(prop.item) {
-			config.instance = 'Array';
 			if(prop.item.type.isSchema) {
 				config.schema = prop.item.type;
 			}

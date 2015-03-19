@@ -9,6 +9,10 @@ export default class MixedType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'Mixed';
+	}	
+
 	static getDbType(options) {
 		return void 0;
 	}

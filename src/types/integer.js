@@ -15,6 +15,10 @@ export default class IntegerType extends Type {
 		return value;
 	}
 
+	static toString() {
+		return 'Integer';
+	}	
+
 	static getDbType(options) {
 		return 'INTEGER';
 	}

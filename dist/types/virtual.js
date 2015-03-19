@@ -51,6 +51,12 @@ var Virtual = (function (_Type) {
 				return this;
 			}
 		}
+	}, {
+		toString: {
+			value: function toString() {
+				return "Virtual";
+			}
+		}
 	});
 
 	return Virtual;

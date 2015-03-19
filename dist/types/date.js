@@ -39,6 +39,11 @@ var DateType = (function (_Type) {
 			}
 		}
 	}, {
+		toString: {
+			value: function toString() {
+				return "Date";
+			}
+		},
 		getDbType: {
 			value: function getDbType(options) {
 				return "DATETIME";

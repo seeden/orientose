@@ -28,6 +28,10 @@ var MixedType = _interopRequire(require("../types/mixed"));
 
 var IndexType = _interopRequire(require("../constants/indextype"));
 
+var debug = _interopRequire(require("debug"));
+
+var log = debug("orientose:schema");
+
 var Schema = (function (_EventEmitter) {
 	function Schema(props, options) {
 		_classCallCheck(this, Schema);
@@ -210,7 +214,13 @@ var Schema = (function (_EventEmitter) {
 
 				var pos = path.indexOf(".");
 				if (pos === -1) {
-					var normalizedOptions = this.normalizeOptions(options);
+					try {
+						var normalizedOptions = this.normalizeOptions(options);
+					} catch (e) {
+						log("Problem with path: " + path);
+						throw e;
+					}
+
 					if (!normalizedOptions) {
 						return this;
 					}
@@ -299,11 +309,17 @@ var Schema = (function (_EventEmitter) {
 					var path = subPaths.pop();
 
 					var prop = this.getPath(subPaths.join("."));
-					if (!prop || !prop.type || !prop.type.isSchema) {
+					if (!prop) {
 						throw new Error("Field does not exists " + subPaths.join("."));
 					}
 
-					return prop.type.virtual(path, options);
+					var type = prop.item ? prop.item.type : prop.type;
+
+					if (!type || !type.isSchema) {
+						throw new Error("Field does not exists " + subPaths.join("."));
+					}
+
+					return type.virtual(path, options);
 				}
 
 				if (this._virtuals[path]) {
@@ -461,6 +477,13 @@ var Schema = (function (_EventEmitter) {
 					};
 				}
 
+				//if it is one of our types
+				if (_.isFunction(options)) {
+					options = {
+						type: options
+					};
+				}
+
 				//1. convert objects
 				if (_.isPlainObject(options) && (!options.type || options.type.type)) {
 					options = {
@@ -479,7 +502,7 @@ var Schema = (function (_EventEmitter) {
 
 				//create schema from plain object
 				if (_.isPlainObject(type)) {
-					type = new Schema(type);
+					type = Object.keys(type).length ? new Schema(type) : MixedType;
 				}
 
 				var normalised = {
@@ -508,6 +531,7 @@ var Schema = (function (_EventEmitter) {
 
 				var config = {
 					path: path,
+					instance: prop.schemaType.toString(),
 					setters: [],
 					getters: [],
 					options: options,
@@ -515,7 +539,6 @@ var Schema = (function (_EventEmitter) {
 				};
 
 				if (prop.item) {
-					config.instance = "Array";
 					if (prop.item.type.isSchema) {
 						config.schema = prop.item.type;
 					}

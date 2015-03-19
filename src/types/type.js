@@ -91,6 +91,10 @@ export default class Type {
 		return this.value;
 	}
 
+	static toString() {
+		throw new Error('Method toString is not defined');
+	}
+
 	static getDbType(options) {
 		throw new Error('You need to override getter dbType');
 	}
