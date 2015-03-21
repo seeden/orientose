@@ -10,6 +10,10 @@ export default class Document extends EventEmitter {
 		this._isNew = true;	
 	}
 
+	model(name) {
+		return this._model.model(name);
+	}
+
 	get(path) {
 		return this._data.get(path);
 	}
@@ -37,45 +41,50 @@ export default class Document extends EventEmitter {
 		return this._data.toJSON(options);
 	}
 
-
-
 	save(callback) {
 		var hooks = this._model.schema.hooks;
-		hooks.execPre('save', this, error => {
+		hooks.execPre('validate', this, error => {
 			if(error) {
 				return callback(error);
-			}
+			}			
 
-			var properties = this.toJSON({
-				virtuals: false,
-				metadata: false
-			});
 
-			if(this.isNew) {
-				this._model.create(properties, (error, user) => {
-					if(error) {
-						return callback(error);
-					}
-
-					this.setupData(user.toJSON({
-						virtuals: false
-					}));
-
-					callback(null, this);
-				});
-
-				return;
-			} 
-
-			this._model.updateByRid(this.rid, properties, (err, total) => {
-				if(err) {
-					return callback(err);
+			hooks.execPre('save', this, error => {
+				if(error) {
+					return callback(error);
 				}
 
-				this.setupData(properties);
-				callback(null, this);
-			});
+				var properties = this.toJSON({
+					virtuals: false,
+					metadata: false,
+					modified: true
+				});
 
+				if(this.isNew) {
+					this._model.create(properties, (error, user) => {
+						if(error) {
+							return callback(error);
+						}
+
+						this.setupData(user.toJSON({
+							virtuals: false
+						}));
+
+						callback(null, this);
+					});
+
+					return;
+				} 
+
+				this._model.updateByRid(this.rid, properties, (err, total) => {
+					if(err) {
+						return callback(err);
+					}
+
+					this.setupData(properties);
+					callback(null, this);
+				});
+			});
 		});
 	}
 
@@ -141,6 +150,10 @@ export default class Document extends EventEmitter {
 
 			static get model() {
 				return model;
+			}
+
+			static get modelName() {
+				return model.name;
 			}
 		};
 

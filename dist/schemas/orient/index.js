@@ -6,11 +6,36 @@ var _get = function get(object, property, receiver) { var desc = Object.getOwnPr
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
+var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 var Schema = _interopRequire(require("../index"));
 
 var RID = _interopRequire(require("../../types/rid"));
+
+var ObjectId = (function () {
+	function ObjectId(id) {
+		_classCallCheck(this, ObjectId);
+
+		this._value = id;
+	}
+
+	_createClass(ObjectId, {
+		toString: {
+			value: function toString() {
+				return this._value;
+			}
+		},
+		equals: {
+			value: function equals(id) {
+				return id && this.toString() === id.toString();
+			}
+		}
+	});
+
+	return ObjectId;
+})();
 
 var OrientSchema = (function (_Schema) {
 	function OrientSchema(props, options) {
@@ -29,7 +54,13 @@ var OrientSchema = (function (_Schema) {
 		});
 
 		this.virtual("_id", { metadata: true }).get(function () {
-			return this.get("@rid");
+			var rid = this.get("@rid");
+
+			if (rid) {
+				return new ObjectId(rid);
+			}
+
+			return rid;
 		});
 	}
 

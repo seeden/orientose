@@ -50,9 +50,15 @@ var ObjectType = (function (_Type) {
 		},
 		isModified: {
 			get: function () {
-				var jsonCurrent = JSON.stringify(this.toJSON());
-				var jsonOriginal = JSON.stringify(this.original);
-				return jsonCurrent === jsonOriginal;
+				var isModified = false;
+
+				this._value.forEach(true, function (prop) {
+					if (prop.isModified) {
+						isModified = true;
+					}
+				});
+
+				return isModified;
 			}
 		}
 	}, {

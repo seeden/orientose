@@ -333,17 +333,6 @@ export default class Model extends EventEmitter {
 		}
 
 		return new Query(this, {}).create(properties, callback);
-		/*this.db
-			.insert()
-			.into(this.name)
-			.set(properties)
-			.transform(record => {
-				return this._createDocument(record);
-			})
-			.one()
-			.then(function (item) {
-				callback(null, item);
-			}, callback);*/
 	}
 
 	createEdge(from, to, properties, callback) {
@@ -440,26 +429,6 @@ export default class Model extends EventEmitter {
 		options = options || {};
 
 		return new Query(this, options).find(where, callback);
-/*
-		this.db
-			.select()
-			.from(this.name)
-			.where(where)
-			.transform(record => {
-				return this._createDocument(record);
-			})
-			.all()
-			.then(function(items) {
-				callback(null, items);
-			}, function(err) {
-				callback(err);
-			});*/
-	}
-
-	processQueryLanguage (query, conditions) {
-		console.log(where);
-
-		return query;
 	}
 
 	findOne (where, options, callback) {
@@ -471,21 +440,6 @@ export default class Model extends EventEmitter {
 		options = options || {};
 
 		return new Query(this, options).findOne(where, callback);
-/*
-		this.this.db
-			.select()
-			.from(this.name)
-			.where(where)
-			.transform(record => {
-				return this._createDocument(record);
-			})
-			.limit(1)
-			.one()
-			.then(function(item) {
-				callback(null, item);
-			}, function(err) {
-				callback(err);
-			});*/
 	}
 
 	findByRid (rid, callback) {

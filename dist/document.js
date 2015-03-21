@@ -25,6 +25,11 @@ var Document = (function (_EventEmitter) {
 	_inherits(Document, _EventEmitter);
 
 	_createClass(Document, {
+		model: {
+			value: function model(name) {
+				return this._model.model(name);
+			}
+		},
 		get: {
 			value: function get(path) {
 				return this._data.get(path);
@@ -63,39 +68,46 @@ var Document = (function (_EventEmitter) {
 				var _this = this;
 
 				var hooks = this._model.schema.hooks;
-				hooks.execPre("save", this, function (error) {
+				hooks.execPre("validate", this, function (error) {
 					if (error) {
 						return callback(error);
 					}
 
-					var properties = _this.toJSON({
-						virtuals: false,
-						metadata: false
-					});
-
-					if (_this.isNew) {
-						_this._model.create(properties, function (error, user) {
-							if (error) {
-								return callback(error);
-							}
-
-							_this.setupData(user.toJSON({
-								virtuals: false
-							}));
-
-							callback(null, _this);
-						});
-
-						return;
-					}
-
-					_this._model.updateByRid(_this.rid, properties, function (err, total) {
-						if (err) {
-							return callback(err);
+					hooks.execPre("save", _this, function (error) {
+						if (error) {
+							return callback(error);
 						}
 
-						_this.setupData(properties);
-						callback(null, _this);
+						var properties = _this.toJSON({
+							virtuals: false,
+							metadata: false,
+							modified: true
+						});
+
+						if (_this.isNew) {
+							_this._model.create(properties, function (error, user) {
+								if (error) {
+									return callback(error);
+								}
+
+								_this.setupData(user.toJSON({
+									virtuals: false
+								}));
+
+								callback(null, _this);
+							});
+
+							return;
+						}
+
+						_this._model.updateByRid(_this.rid, properties, function (err, total) {
+							if (err) {
+								return callback(err);
+							}
+
+							_this.setupData(properties);
+							callback(null, _this);
+						});
 					});
 				});
 			}
@@ -178,6 +190,11 @@ var Document = (function (_EventEmitter) {
 						model: {
 							get: function () {
 								return model;
+							}
+						},
+						modelName: {
+							get: function () {
+								return model.name;
 							}
 						}
 					});

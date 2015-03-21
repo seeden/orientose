@@ -22,6 +22,16 @@ var Virtual = (function (_Type) {
 	_inherits(Virtual, _Type);
 
 	_createClass(Virtual, {
+		_preSerialize: {
+			value: function _preSerialize(value) {
+				return this._serialize(value);
+			}
+		},
+		_preDeserialize: {
+			value: function _preDeserialize(value) {
+				return this._deserialize(value);
+			}
+		},
 		_serialize: {
 			value: function _serialize(value) {
 				this.applySet(this.data, value);
@@ -44,11 +54,16 @@ var Virtual = (function (_Type) {
 		applySet: {
 			value: function applySet(scope, value) {
 				if (!this.options.set) {
-					throw new Error("Setter is not defined");
+					return this;
 				}
 
 				this.options.set.call(scope, value, this);
 				return this;
+			}
+		},
+		isModified: {
+			get: function () {
+				return false;
 			}
 		}
 	}, {

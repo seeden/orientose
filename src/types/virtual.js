@@ -5,6 +5,14 @@ export default class Virtual extends Type {
 		super(data, prop);
 	}
 
+	_preSerialize(value) {
+		return this._serialize(value);
+	}
+
+	_preDeserialize(value) {
+		return this._deserialize(value);
+	}
+
 	_serialize(value) {
 		this.applySet(this.data, value);
 	}
@@ -27,10 +35,14 @@ export default class Virtual extends Type {
 
 	applySet (scope, value) {
 		if(!this.options.set) {
-			throw new Error('Setter is not defined');
+			return this;
 		}
 
 		this.options.set.call(scope, value, this);
 		return this;
 	}
+
+	get isModified() {
+		return false;
+	}	
 }

@@ -19,6 +19,20 @@ export default class Data {
 		this.set(properties);
 	}
 
+	forEach(returnType, fn) {
+		if(typeof returnType === 'function') {
+			fn = returnType;
+			returnType = false;
+		}
+
+		Object.keys(this._data).forEach(key => {
+			var value = returnType 
+				? this._data[key]
+				: this.get(key);
+			fn(value, key);
+		});
+	}
+
 	toJSON(options) {
 		var json = {};
 
@@ -34,6 +48,10 @@ export default class Data {
 				continue;
 			}
 
+			if(options.modified && !prop.isModified && !prop.hasDefault) {
+				continue;
+			}
+
 			json[propName] = prop.toJSON(options);
 		}
 
@@ -43,11 +61,21 @@ export default class Data {
 	isModified(path) {
 		var pos = path.indexOf('.');
 		if(pos === -1) {
+			if(!this._data[path]) {
+				log('Path not exists:' + path);
+				return;
+			}
+			
 			return this._data[path].isModified;
 		}
 
 		var currentKey = path.substr(0, pos);
 		var newPath = path.substr(pos + 1);
+
+		if(!this._data[currentKey]) {
+			log('Path not exists:' + currentKey);
+			return;
+		}		
 
 		var data = this._data[currentKey].value;
 		if(!data || !data.get) {
@@ -60,11 +88,21 @@ export default class Data {
 	get(path) {
 		var pos = path.indexOf('.');
 		if(pos === -1) {
+			if(!this._data[path]) {
+				log('Path not exists:' + path);
+				return;
+			}
+
 			return this._data[path].value;
 		}
 
 		var currentKey = path.substr(0, pos);
 		var newPath = path.substr(pos + 1);
+
+		if(!this._data[currentKey]) {
+			log('Path not exists:' + currentKey);
+			return;
+		}
 
 		var data = this._data[currentKey].value;
 		if(!data || !data.get) {
@@ -101,6 +139,11 @@ export default class Data {
 		var currentKey = path.substr(0, pos);
 		var newPath = path.substr(pos + 1);
 
+		if(!this._data[currentKey]) {
+			log('Path not exists:' + currentKey);
+			return;
+		}
+
 		var data = this._data[currentKey].value;
 		if(!data || !data.set) {
 			throw new Error('Subdocument is not defined or it is not an object');
@@ -108,19 +151,6 @@ export default class Data {
 
 		data.set(newPath, value, setAsOriginal);
 		return this;
-
-
-/*
-		if(!this._data[key]) {
-			return this;
-		}
-
-		this._data[key].value = value;
-		if(original) {
-			this._data[key].setAsOriginal();
-		}
-
-		return this;*/
 	}
 
 	setupData(properties) {

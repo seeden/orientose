@@ -39,6 +39,21 @@ var Data = (function () {
 	}
 
 	_createClass(Data, {
+		forEach: {
+			value: function forEach(returnType, fn) {
+				var _this = this;
+
+				if (typeof returnType === "function") {
+					fn = returnType;
+					returnType = false;
+				}
+
+				Object.keys(this._data).forEach(function (key) {
+					var value = returnType ? _this._data[key] : _this.get(key);
+					fn(value, key);
+				});
+			}
+		},
 		toJSON: {
 			value: function toJSON(options) {
 				var json = {};
@@ -55,6 +70,10 @@ var Data = (function () {
 						continue;
 					}
 
+					if (options.modified && !prop.isModified && !prop.hasDefault) {
+						continue;
+					}
+
 					json[propName] = prop.toJSON(options);
 				}
 
@@ -65,11 +84,21 @@ var Data = (function () {
 			value: function isModified(path) {
 				var pos = path.indexOf(".");
 				if (pos === -1) {
+					if (!this._data[path]) {
+						log("Path not exists:" + path);
+						return;
+					}
+
 					return this._data[path].isModified;
 				}
 
 				var currentKey = path.substr(0, pos);
 				var newPath = path.substr(pos + 1);
+
+				if (!this._data[currentKey]) {
+					log("Path not exists:" + currentKey);
+					return;
+				}
 
 				var data = this._data[currentKey].value;
 				if (!data || !data.get) {
@@ -83,11 +112,21 @@ var Data = (function () {
 			value: function get(path) {
 				var pos = path.indexOf(".");
 				if (pos === -1) {
+					if (!this._data[path]) {
+						log("Path not exists:" + path);
+						return;
+					}
+
 					return this._data[path].value;
 				}
 
 				var currentKey = path.substr(0, pos);
 				var newPath = path.substr(pos + 1);
+
+				if (!this._data[currentKey]) {
+					log("Path not exists:" + currentKey);
+					return;
+				}
 
 				var data = this._data[currentKey].value;
 				if (!data || !data.get) {
@@ -124,6 +163,11 @@ var Data = (function () {
 				var currentKey = path.substr(0, pos);
 				var newPath = path.substr(pos + 1);
 
+				if (!this._data[currentKey]) {
+					log("Path not exists:" + currentKey);
+					return;
+				}
+
 				var data = this._data[currentKey].value;
 				if (!data || !data.set) {
 					throw new Error("Subdocument is not defined or it is not an object");
@@ -131,18 +175,6 @@ var Data = (function () {
 
 				data.set(newPath, value, setAsOriginal);
 				return this;
-
-				/*
-    		if(!this._data[key]) {
-    			return this;
-    		}
-    
-    		this._data[key].value = value;
-    		if(original) {
-    			this._data[key].setAsOriginal();
-    		}
-    
-    		return this;*/
 			}
 		},
 		setupData: {

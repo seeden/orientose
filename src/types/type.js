@@ -13,6 +13,9 @@ export default class Type {
 		this._default  = options.default;
 		this._value    = void 0;
 		this._original = void 0;
+
+		this._handleNull = true;
+		this._handleUndefined = true;
 	}
 
 	get data() {
@@ -31,17 +34,41 @@ export default class Type {
 		return this._prop;
 	}
 
+	get hasDefault() {
+		return typeof this._default !== 'undefined';
+	}
+
 
 	get isMetadata() {
 		return !!this.options.metadata;
 	}
 
 	set value(value) {
-		this._value = this._serialize(value);
+		this._value = this._preSerialize(value);
 	}
 
+	_preSerialize(value) {
+		if(value === null && this._handleNull) {
+			return value;
+		} else if(typeof value === 'undefined' && this._handleUndefined) {
+			return value;
+		}
+
+		return this._serialize(value);
+	}
+
+	_preDeserialize(value) {
+		if(value === null && this._handleNull) {
+			return value;
+		} else if(typeof value === 'undefined' && this._handleUndefined) {
+			return value;
+		}
+
+		return this._deserialize(value);
+	}	
+
 	get value() {
-		var value = this._deserialize(this._value);
+		var value = this._preDeserialize(this._value);
 		if(typeof value !== 'undefined') {
 			return value;
 		}
@@ -51,7 +78,7 @@ export default class Type {
 			defaultValue = defaultValue();
 		} 
 
-		return this._deserialize(this._serialize(defaultValue));
+		return this._preDeserialize(this._preSerialize(defaultValue));
 	}
 
 	_serialize(value) {

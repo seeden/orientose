@@ -21,6 +21,9 @@ var Type = (function () {
 		this._default = options["default"];
 		this._value = void 0;
 		this._original = void 0;
+
+		this._handleNull = true;
+		this._handleUndefined = true;
 	}
 
 	_createClass(Type, {
@@ -44,6 +47,11 @@ var Type = (function () {
 				return this._prop;
 			}
 		},
+		hasDefault: {
+			get: function () {
+				return typeof this._default !== "undefined";
+			}
+		},
 		isMetadata: {
 			get: function () {
 				return !!this.options.metadata;
@@ -51,10 +59,10 @@ var Type = (function () {
 		},
 		value: {
 			set: function (value) {
-				this._value = this._serialize(value);
+				this._value = this._preSerialize(value);
 			},
 			get: function () {
-				var value = this._deserialize(this._value);
+				var value = this._preDeserialize(this._value);
 				if (typeof value !== "undefined") {
 					return value;
 				}
@@ -64,7 +72,29 @@ var Type = (function () {
 					defaultValue = defaultValue();
 				}
 
-				return this._deserialize(this._serialize(defaultValue));
+				return this._preDeserialize(this._preSerialize(defaultValue));
+			}
+		},
+		_preSerialize: {
+			value: function _preSerialize(value) {
+				if (value === null && this._handleNull) {
+					return value;
+				} else if (typeof value === "undefined" && this._handleUndefined) {
+					return value;
+				}
+
+				return this._serialize(value);
+			}
+		},
+		_preDeserialize: {
+			value: function _preDeserialize(value) {
+				if (value === null && this._handleNull) {
+					return value;
+				} else if (typeof value === "undefined" && this._handleUndefined) {
+					return value;
+				}
+
+				return this._deserialize(value);
 			}
 		},
 		_serialize: {

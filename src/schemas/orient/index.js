@@ -1,6 +1,20 @@
 import Schema from '../index';
 import RID from '../../types/rid';
 
+class ObjectId {
+	constructor(id) {
+		this._value = id;
+	}
+
+	toString() {
+		return this._value;
+	}
+
+	equals(id) {
+		return id && this.toString() === id.toString();
+	}
+}
+
 export default class OrientSchema extends Schema {
 	constructor(props, options) {
 		super(props, options);
@@ -17,7 +31,13 @@ export default class OrientSchema extends Schema {
 		});
 
 		this.virtual('_id', { metadata: true }).get(function() {
-			return this.get('@rid');
+			var rid = this.get('@rid');
+
+			if(rid) {
+				return new ObjectId(rid);
+			}
+
+			return rid;
 		});
 	}
 }

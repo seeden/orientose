@@ -55,13 +55,13 @@ export default class Query {
 		query = query[action]();
 		query = (action === Action.CREATE) 
 			? query.into(model.name) 
-			: from(model.name);
+			: query.from(model.name);
 
 		this._params.forEach(function(params) {
 			query = query[params.operation](params.conditions);
 		});
 
-		if(action === Action.SELECT) {
+		if(action === Action.SELECT || action === Action.CREATE) {
 			query = query.transform(function(record) {
 				return model._createDocument(record);
 			});
