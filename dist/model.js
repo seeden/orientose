@@ -30,6 +30,8 @@ var debug = _interopRequire(require("debug"));
 
 var _ = _interopRequire(require("lodash"));
 
+var Query = _interopRequire(require("./query"));
+
 var log = debug("orientose:model");
 
 var Model = (function (_EventEmitter) {
@@ -353,8 +355,6 @@ var Model = (function (_EventEmitter) {
 		},
 		create: {
 			value: function create(properties, callback) {
-				var _this = this;
-
 				var schema = this.schema;
 
 				properties = properties || {};
@@ -373,11 +373,18 @@ var Model = (function (_EventEmitter) {
 					return this.createEdge(from, to, properties, callback);
 				}
 
-				this.db.insert().into(this.name).set(properties).transform(function (record) {
-					return _this._createDocument(record);
-				}).one().then(function (item) {
-					callback(null, item);
-				}, callback);
+				return new Query(this, {}).create(properties, callback);
+				/*this.db
+    	.insert()
+    	.into(this.name)
+    	.set(properties)
+    	.transform(record => {
+    		return this._createDocument(record);
+    	})
+    	.one()
+    	.then(function (item) {
+    		callback(null, item);
+    	}, callback);*/
 			}
 		},
 		createEdge: {
@@ -393,9 +400,16 @@ var Model = (function (_EventEmitter) {
 		},
 		remove: {
 			value: function remove(where, callback) {
-				this.db["delete"]().from(this.name).where(where).scalar().then(function (total) {
-					callback(null, total);
-				}, callback);
+				return new Query(this, options).remove(where, callback);
+				/*
+    		this.db
+    			.delete()
+    			.from(this.name)
+    			.where(where)
+    			.scalar()
+    			.then(function(total) {
+    				callback(null, total);
+    			}, callback);*/
 			}
 		},
 		removeByRid: {
@@ -444,8 +458,6 @@ var Model = (function (_EventEmitter) {
 		},
 		find: {
 			value: function find(where, options, callback) {
-				var _this = this;
-
 				if (typeof options === "function") {
 					callback = options;
 					options = {};
@@ -453,19 +465,32 @@ var Model = (function (_EventEmitter) {
 
 				options = options || {};
 
-				this.db.select().from(this.name).where(where).transform(function (record) {
-					return _this._createDocument(record);
-				}).all().then(function (items) {
-					callback(null, items);
-				}, function (err) {
-					callback(err);
-				});
+				return new Query(this, options).find(where, callback);
+				/*
+    		this.db
+    			.select()
+    			.from(this.name)
+    			.where(where)
+    			.transform(record => {
+    				return this._createDocument(record);
+    			})
+    			.all()
+    			.then(function(items) {
+    				callback(null, items);
+    			}, function(err) {
+    				callback(err);
+    			});*/
+			}
+		},
+		processQueryLanguage: {
+			value: function processQueryLanguage(query, conditions) {
+				console.log(where);
+
+				return query;
 			}
 		},
 		findOne: {
 			value: function findOne(where, options, callback) {
-				var _this = this;
-
 				if (typeof options === "function") {
 					callback = options;
 					options = {};
@@ -473,13 +498,22 @@ var Model = (function (_EventEmitter) {
 
 				options = options || {};
 
-				this.db.select().from(this.name).where(where).transform(function (record) {
-					return _this._createDocument(record);
-				}).limit(1).one().then(function (item) {
-					callback(null, item);
-				}, function (err) {
-					callback(err);
-				});
+				return new Query(this, options).findOne(where, callback);
+				/*
+    		this.this.db
+    			.select()
+    			.from(this.name)
+    			.where(where)
+    			.transform(record => {
+    				return this._createDocument(record);
+    			})
+    			.limit(1)
+    			.one()
+    			.then(function(item) {
+    				callback(null, item);
+    			}, function(err) {
+    				callback(err);
+    			});*/
 			}
 		},
 		findByRid: {

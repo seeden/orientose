@@ -40,6 +40,23 @@ export default class Data {
 		return json;
 	}
 
+	isModified(path) {
+		var pos = path.indexOf('.');
+		if(pos === -1) {
+			return this._data[path].isModified;
+		}
+
+		var currentKey = path.substr(0, pos);
+		var newPath = path.substr(pos + 1);
+
+		var data = this._data[currentKey].value;
+		if(!data || !data.get) {
+			throw new Error('Subdocument is not defined or it is not an object');
+		}
+
+		return data.get(newPath);		
+	}
+
 	get(path) {
 		var pos = path.indexOf('.');
 		if(pos === -1) {

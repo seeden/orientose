@@ -41,6 +41,11 @@ var Document = (function (_EventEmitter) {
 				return this._isNew;
 			}
 		},
+		isModified: {
+			value: function isModified(path) {
+				return this._data.isModified(path);
+			}
+		},
 		setupData: {
 			value: function setupData(properties) {
 				this._data.setupData(properties);

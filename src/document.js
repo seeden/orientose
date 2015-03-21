@@ -23,6 +23,10 @@ export default class Document extends EventEmitter {
 		return this._isNew;
 	}
 
+	isModified(path) {
+		return this._data.isModified(path);
+	}
+
 	setupData(properties) {
 		this._data.setupData(properties);
 		this._isNew = false;
