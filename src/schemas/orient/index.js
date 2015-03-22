@@ -1,43 +1,34 @@
 import Schema from '../index';
 import RID from '../../types/rid';
+import ObjectId from '../mongoose/objectid';
 
-class ObjectId {
-	constructor(id) {
-		this._value = id;
-	}
+export function prepareSchema(schema) {
+	schema.add({
+		'@type'    : { type: String, readonly: true, metadata: true },
+		'@class'   : { type: String, readonly: true, metadata: true },
+		'@rid'     : { type: RID, readonly: true, metadata: true },
+		'@version' : { type: Number, readonly: true, metadata: true },
+	});
 
-	toString() {
-		return this._value;
-	}
+	schema.virtual('rid', { metadata: true }).get(function() {
+		return this.get('@rid');
+	});
 
-	equals(id) {
-		return id && this.toString() === id.toString();
-	}
+	schema.virtual('_id', { metadata: true }).get(function() {
+		var rid = this.get('@rid');
+
+		if(rid) {
+			return new ObjectId(rid);
+		}
+
+		return rid;
+	});	
 }
 
 export default class OrientSchema extends Schema {
 	constructor(props, options) {
 		super(props, options);
 
-		this.add({
-			'@type'    : { type: String, readonly: true, metadata: true },
-			'@class'   : { type: String, readonly: true, metadata: true },
-			'@rid'     : { type: RID, readonly: true, metadata: true },
-			'@version' : { type: Number, readonly: true, metadata: true },
-		});
-
-		this.virtual('rid', { metadata: true }).get(function() {
-			return this.get('@rid');
-		});
-
-		this.virtual('_id', { metadata: true }).get(function() {
-			var rid = this.get('@rid');
-
-			if(rid) {
-				return new ObjectId(rid);
-			}
-
-			return rid;
-		});
+		prepareSchema(this);
 	}
 }

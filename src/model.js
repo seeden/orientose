@@ -70,10 +70,6 @@ export default class Model extends EventEmitter {
 		return this.connection.db;
 	}
 
-	get isEdge() {
-		return this.schema.isEdge;
-	}
-
 	get options() {
 		return this._options;
 	}
@@ -89,6 +85,7 @@ export default class Model extends EventEmitter {
 
 		waterfall([
 			function(callback) {
+				//todo speeed up for each class is same
 				db.index.list(true).then(function(indexes) {
 					//filter indexes for current class
 					indexes = indexes.filter(function(index) {
@@ -108,9 +105,17 @@ export default class Model extends EventEmitter {
 				each(indexes, function(index, callback) {
 					var { definition, type, name } = index;
 
-					if(schema.hasIndex(name)) {
+					var schemaIndexName = name;
+					var indexStartName = className + '.';
+					if(schemaIndexName.indexOf(indexStartName) === 0 ) {
+						schemaIndexName = schemaIndexName.substr(indexStartName.length);
+					}
+
+					if(schema.hasIndex(schemaIndexName)) {
 						return callback(null);
 					}
+
+					log('Deleting unused index: ' + name);
 
 					db.index.drop(name).then(function(droped) {
 						callback(null);
@@ -140,6 +145,8 @@ export default class Model extends EventEmitter {
 					if(oIndex) {
 						return callback(null);
 					}
+
+					log('Creating index: ' + indexName);
 
 					var config = {
 						'class'    : className, 
@@ -310,144 +317,32 @@ export default class Model extends EventEmitter {
 			throw new Error('There is no model for class: ' + className);
 		}
 
-		return new model({}).setupData(properties);
+		return new model({})
+			.setupData(properties);
 	}
 
-	create (properties, callback) {
-		var schema = this.schema;
-
-		properties = properties || {};
-
-		if(schema.isEdge) {
-			if(!properties['in'] || !properties['out']) {
-				throw new Error('In out is not defined');
-			}
-
-			var from = properties['in'];
-			var to = properties['out'];
-
-			delete properties['in'];
-			delete properties['out'];
-
-			return this.createEdge(from, to, properties, callback);
-		}
-
-		return new Query(this, {}).create(properties, callback);
+	create (doc, callback) {
+		return new Query(this, {})
+			.create(doc, callback);
 	}
 
-	createEdge(from, to, properties, callback) {
-		this.db
-			.create('EDGE', this.name)
-			.from(from)
-			.to(to)
-			.set(properties)
-			.transform(record => {
-				return this._createDocument(record);
-			})
-			.one()
-			.then(function (item) {
-				callback(null, item);
-			}, callback);		
+	update (conditions, doc, options, callback) {
+		return new Query(this, {})
+			.update(conditions, doc, options, callback);
 	}
 
-	remove (where, callback) {
-		return new Query(this, options).remove(where, callback);
-/*
-		this.db
-			.delete()
-			.from(this.name)
-			.where(where)
-			.scalar()
-			.then(function(total) {
-				callback(null, total);
-			}, callback);*/
+	find (conditions, callback) {
+		return new Query(this, {})
+			.find(conditions, callback);
 	}
 
-	removeByRid(rid, callback) {
-		this.db
-			.record
-			.delete(rid)
-			.then(function(response) {
-				if(!response || !response['@rid']) {
-					return callback(null, 0);
-				}
-
-				var currentRid = RidType.objectToString(response['@rid']);
-				if(currentRid === rid) {
-					return callback(null, 1);
-				}
-
-				callback(null, 0);
-			}, callback);		
-	}
-
-	removeEdgeByRid(rid, callback) {
-		this.db
-			.delete('EDGE', rid)
-			.scalar()
-			.then(function (affectedRows) {
-				callback(null, affectedRows)
-			}, callback);
-	}
-
-	removeVertexByRid(rid, callback) {
-		this.db
-			.delete('VERTEX', rid)
-			.scalar()
-			.then(function (affectedRows) {
-				callback(null, affectedRows)
-			}, callback);
+	findOne (conditions, callback) {
+		return new Query(this, {})
+			.findOne(conditions, callback);
 	}	
 
-	update (where, properties, callback) {
-		this.db
-			.update(this.name)
-			.set(properties)
-			.where(where)
-			.scalar()
-			.then(function(total) {
-				callback(null, total);
-			}, callback);
+	remove (conditions, callback) {
+		return new Query(this, {})
+			.remove(conditions, callback);
 	}
-
-	updateByRid (rid, properties, callback) {
-		this.db
-			.update(rid)
-			.set(properties)
-			.scalar()
-			.then(function(total) {
-				callback(null, total);
-			}, callback);
-	}
-
-	find (where, options, callback) {
-		if(typeof options === 'function') {
-			callback = options;
-			options = {};
-		}
-
-		options = options || {};
-
-		return new Query(this, options).find(where, callback);
-	}
-
-	findOne (where, options, callback) {
-		if(typeof options === 'function') {
-			callback = options;
-			options = {};
-		}
-
-		options = options || {};
-
-		return new Query(this, options).findOne(where, callback);
-	}
-
-	findByRid (rid, callback) {
-		this.db
-			.record
-			.get(rid)
-			.then(record => {
-				callback(null, this._createDocument(record));
-			}, callback);
-	}	
 }

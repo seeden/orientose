@@ -9,6 +9,7 @@ export default class ArrayType extends Type {
 			throw new Error('Type of the array item is not defined');
 		}
 
+		this._original = [];
 		this._value = [];
 	}
 
@@ -57,10 +58,19 @@ export default class ArrayType extends Type {
 	}
 
 	get isModified() {
-		var jsonCurrent = JSON.stringify(this.toJSON());
-		var jsonOriginal = JSON.stringify(this.original);
-		return jsonCurrent === jsonOriginal;
-	}	
+		if(this._original.length !== this._value.length) {
+			return true;
+		}
+
+		var isModified = false;
+		this._value.forEach(function(prop) {
+			if(prop.isModified) {
+				isModified = true;
+			}
+		});
+
+		return isModified;
+	}		
 
 	static toString() {
 		return 'Array';

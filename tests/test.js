@@ -134,7 +134,7 @@ describe('Connection', function() {
 
 
 	it('should be able to find a document', function(done) {
-		User.findByRid(rid, function(err, user) {
+		User.findOne(rid, function(err, user) {
 			if(err) {
 				throw err;
 			}
@@ -154,7 +154,7 @@ describe('Connection', function() {
 	});	
 
 	it('should be able to use toJSON', function(done) {
-		User.findByRid(rid, function(err, user) {
+		User.findOne(rid, function(err, user) {
 			if(err) {
 				throw err;
 			}
@@ -178,7 +178,7 @@ describe('Connection', function() {
 	});	
 
 	it('should be able to set properties by path', function(done) {
-		User.findByRid(rid, function(err, user) {
+		User.findOne(rid, function(err, user) {
 			if(err) {
 				throw err;
 			}
@@ -203,7 +203,7 @@ describe('Connection', function() {
 	});		
 
 	it('should be able to remove a document', function(done) {
-		User.removeByRid(rid, function(err, total) {
+		User.remove(rid, function(err, total) {
 			if(err) {
 				throw err;
 			}
@@ -282,6 +282,8 @@ describe('E', function() {
 	});	
 
 	var edge = null;
+	var p1 = null;
+	var p2 = null;
 
 	it('should be able to create edge beetwean two person', function(done) {
 		var Follow = connection.model('Follow');
@@ -295,6 +297,8 @@ describe('E', function() {
 				}, callback);
 			},
 			function(person1, callback) {
+				p1 = person1;
+
 				Person.findOne({
 					name: 'Luca'
 				}, function(err, person2) {
@@ -302,19 +306,21 @@ describe('E', function() {
 						return callback(err);
 					}
 
+					p2 = person2;
+
 					callback(null, person1, person2);
 				});
 			},
 			function(p1, p2, callback) {
+			
 				new Follow({
-					from: p1,
-					to: p2
-				}).save(function(err, follow) {
+				}).from(p1).to(p2).save(function(err, follow) {
 					if(err) {
 						return callback(err);
 					}
 
 					edge = follow;
+
 
 					callback(null);
 				});
@@ -329,12 +335,38 @@ describe('E', function() {
 	});	
 
 	it('should be able to remove edge', function(done) {
-		edge.remove(function(err) {
+		edge.remove(function(err, total) {
 			if(err) {
 				throw err;
 			}
 
+			total.should.equal(1);
+
 			done();
 		});
 	});	
+
+	it('should be able to remove vertex p1', function(done) {
+		p1.remove(function(err, total) {
+			if(err) {
+				throw err;
+			}
+
+			total.should.equal(1);
+
+			done();
+		});
+	});	
+
+	it('should be able to remove vertex p2', function(done) {
+		p2.remove(function(err, total) {
+			if(err) {
+				throw err;
+			}
+
+			total.should.equal(1);
+
+			done();
+		});
+	});			
 });

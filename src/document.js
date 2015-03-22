@@ -7,9 +7,21 @@ export default class Document extends EventEmitter {
 		this._model = model;
 		this._data  = new model.schema.DataClass(properties); 
 
+		this._from = null;
+		this._to = null;
+
 		this._isNew = true;	
 	}
 
+	from(value) {
+		this._from = value;
+		return this;
+	}
+
+	to(value) {
+		this._to = value;
+		return this;
+	}
 	model(name) {
 		return this._model.model(name);
 	}
@@ -48,7 +60,6 @@ export default class Document extends EventEmitter {
 				return callback(error);
 			}			
 
-
 			hooks.execPre('save', this, error => {
 				if(error) {
 					return callback(error);
@@ -61,7 +72,7 @@ export default class Document extends EventEmitter {
 				});
 
 				if(this.isNew) {
-					this._model.create(properties, (error, user) => {
+					this._model.create(properties).from(this._from).to(this._to).exec((error, user) => {
 						if(error) {
 							return callback(error);
 						}
@@ -76,7 +87,7 @@ export default class Document extends EventEmitter {
 					return;
 				} 
 
-				this._model.updateByRid(this.rid, properties, (err, total) => {
+				this._model.update(this, properties, (err, total) => {
 					if(err) {
 						return callback(err);
 					}
@@ -91,52 +102,39 @@ export default class Document extends EventEmitter {
 	remove(callback) {
 		var model = this._model;
 		var hooks = model.schema.hooks;
-		var rid = this.rid;
 
 		if(this.isNew) {
 			return callback(null, this);
 		}
 
-		hooks.execPre('remove', this, function(error) {
+		hooks.execPre('remove', this, (error) => {
 			if(error) {
 				return callback(error);
 			}
 
-			if(model.isEdge) {
-				return model.removeEdgeByRid(rid, callback);
-			} 
-
-			if(model.isVertex) {
-				return model.removeVertexByRid(rid, callback);
-			}		
-
-			model.removeByRid(rid, callback);
+			model.remove(this, callback);
 		});
 	}
 
 	static findById(id, callback) {
-		this.findByRid(id, callback);
+		this.findOne(id, callback);
 	}
 
-	static findByRid(rid, callback) {
-		return this.model.findByRid(rid, callback);
+	static findOne(conditions, callback) {
+		return this.model.findOne(conditions, callback);
 	}
 
-	static removeByRid(rid, callback) {
-		return this.model.removeByRid(rid, callback);
-	}
-
-	static findOne(where, options, callback) {
-		return this.model.findOne(where, options, callback);
-	}
-
-	static find(where, options, callback) {
-		return this.model.find(where, options, callback);
+	static find(conditions, callback) {
+		return this.model.find(conditions, callback);
 	}
 
 	static create(properties, callback) {
 		return new this(properties).save(callback);
-	}	
+	}
+
+	static remove(conditions, callback) {
+		return this.model.remove(conditions, callback);
+	}
 
 	static get model() {
 		throw new Error('You need to override model getter');

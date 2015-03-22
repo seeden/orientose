@@ -19,12 +19,27 @@ var Document = (function (_EventEmitter) {
 		this._model = model;
 		this._data = new model.schema.DataClass(properties);
 
+		this._from = null;
+		this._to = null;
+
 		this._isNew = true;
 	}
 
 	_inherits(Document, _EventEmitter);
 
 	_createClass(Document, {
+		from: {
+			value: function from(value) {
+				this._from = value;
+				return this;
+			}
+		},
+		to: {
+			value: function to(value) {
+				this._to = value;
+				return this;
+			}
+		},
 		model: {
 			value: function model(name) {
 				return this._model.model(name);
@@ -85,7 +100,7 @@ var Document = (function (_EventEmitter) {
 						});
 
 						if (_this.isNew) {
-							_this._model.create(properties, function (error, user) {
+							_this._model.create(properties).from(_this._from).to(_this._to).exec(function (error, user) {
 								if (error) {
 									return callback(error);
 								}
@@ -100,7 +115,7 @@ var Document = (function (_EventEmitter) {
 							return;
 						}
 
-						_this._model.updateByRid(_this.rid, properties, function (err, total) {
+						_this._model.update(_this, properties, function (err, total) {
 							if (err) {
 								return callback(err);
 							}
@@ -114,9 +129,10 @@ var Document = (function (_EventEmitter) {
 		},
 		remove: {
 			value: function remove(callback) {
+				var _this = this;
+
 				var model = this._model;
 				var hooks = model.schema.hooks;
-				var rid = this.rid;
 
 				if (this.isNew) {
 					return callback(null, this);
@@ -127,47 +143,34 @@ var Document = (function (_EventEmitter) {
 						return callback(error);
 					}
 
-					if (model.isEdge) {
-						return model.removeEdgeByRid(rid, callback);
-					}
-
-					if (model.isVertex) {
-						return model.removeVertexByRid(rid, callback);
-					}
-
-					model.removeByRid(rid, callback);
+					model.remove(_this, callback);
 				});
 			}
 		}
 	}, {
 		findById: {
 			value: function findById(id, callback) {
-				this.findByRid(id, callback);
-			}
-		},
-		findByRid: {
-			value: function findByRid(rid, callback) {
-				return this.model.findByRid(rid, callback);
-			}
-		},
-		removeByRid: {
-			value: function removeByRid(rid, callback) {
-				return this.model.removeByRid(rid, callback);
+				this.findOne(id, callback);
 			}
 		},
 		findOne: {
-			value: function findOne(where, options, callback) {
-				return this.model.findOne(where, options, callback);
+			value: function findOne(conditions, callback) {
+				return this.model.findOne(conditions, callback);
 			}
 		},
 		find: {
-			value: function find(where, options, callback) {
-				return this.model.find(where, options, callback);
+			value: function find(conditions, callback) {
+				return this.model.find(conditions, callback);
 			}
 		},
 		create: {
 			value: function create(properties, callback) {
 				return new this(properties).save(callback);
+			}
+		},
+		remove: {
+			value: function remove(conditions, callback) {
+				return this.model.remove(conditions, callback);
 			}
 		},
 		model: {

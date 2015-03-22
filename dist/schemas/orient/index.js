@@ -6,36 +6,40 @@ var _get = function get(object, property, receiver) { var desc = Object.getOwnPr
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
-var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+
+exports.prepareSchema = prepareSchema;
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
 var Schema = _interopRequire(require("../index"));
 
 var RID = _interopRequire(require("../../types/rid"));
 
-var ObjectId = (function () {
-	function ObjectId(id) {
-		_classCallCheck(this, ObjectId);
+var ObjectId = _interopRequire(require("../mongoose/objectid"));
 
-		this._value = id;
-	}
+function prepareSchema(schema) {
+	schema.add({
+		"@type": { type: String, readonly: true, metadata: true },
+		"@class": { type: String, readonly: true, metadata: true },
+		"@rid": { type: RID, readonly: true, metadata: true },
+		"@version": { type: Number, readonly: true, metadata: true } });
 
-	_createClass(ObjectId, {
-		toString: {
-			value: function toString() {
-				return this._value;
-			}
-		},
-		equals: {
-			value: function equals(id) {
-				return id && this.toString() === id.toString();
-			}
-		}
+	schema.virtual("rid", { metadata: true }).get(function () {
+		return this.get("@rid");
 	});
 
-	return ObjectId;
-})();
+	schema.virtual("_id", { metadata: true }).get(function () {
+		var rid = this.get("@rid");
+
+		if (rid) {
+			return new ObjectId(rid);
+		}
+
+		return rid;
+	});
+}
 
 var OrientSchema = (function (_Schema) {
 	function OrientSchema(props, options) {
@@ -43,25 +47,7 @@ var OrientSchema = (function (_Schema) {
 
 		_get(Object.getPrototypeOf(OrientSchema.prototype), "constructor", this).call(this, props, options);
 
-		this.add({
-			"@type": { type: String, readonly: true, metadata: true },
-			"@class": { type: String, readonly: true, metadata: true },
-			"@rid": { type: RID, readonly: true, metadata: true },
-			"@version": { type: Number, readonly: true, metadata: true } });
-
-		this.virtual("rid", { metadata: true }).get(function () {
-			return this.get("@rid");
-		});
-
-		this.virtual("_id", { metadata: true }).get(function () {
-			var rid = this.get("@rid");
-
-			if (rid) {
-				return new ObjectId(rid);
-			}
-
-			return rid;
-		});
+		prepareSchema(this);
 	}
 
 	_inherits(OrientSchema, _Schema);
@@ -69,4 +55,4 @@ var OrientSchema = (function (_Schema) {
 	return OrientSchema;
 })(Schema);
 
-module.exports = OrientSchema;
+exports["default"] = OrientSchema;

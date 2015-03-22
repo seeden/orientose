@@ -105,11 +105,6 @@ var Model = (function (_EventEmitter) {
 				return this.connection.db;
 			}
 		},
-		isEdge: {
-			get: function () {
-				return this.schema.isEdge;
-			}
-		},
 		options: {
 			get: function () {
 				return this._options;
@@ -127,6 +122,7 @@ var Model = (function (_EventEmitter) {
 				var schema = this.schema;
 
 				waterfall([function (callback) {
+					//todo speeed up for each class is same
 					db.index.list(true).then(function (indexes) {
 						//filter indexes for current class
 						indexes = indexes.filter(function (index) {
@@ -148,9 +144,17 @@ var Model = (function (_EventEmitter) {
 						var type = index.type;
 						var name = index.name;
 
-						if (schema.hasIndex(name)) {
+						var schemaIndexName = name;
+						var indexStartName = className + ".";
+						if (schemaIndexName.indexOf(indexStartName) === 0) {
+							schemaIndexName = schemaIndexName.substr(indexStartName.length);
+						}
+
+						if (schema.hasIndex(schemaIndexName)) {
 							return callback(null);
 						}
+
+						log("Deleting unused index: " + name);
 
 						db.index.drop(name).then(function (droped) {
 							callback(null);
@@ -180,6 +184,8 @@ var Model = (function (_EventEmitter) {
 						if (oIndex) {
 							return callback(null);
 						}
+
+						log("Creating index: " + indexName);
 
 						var config = {
 							"class": className,
@@ -354,128 +360,28 @@ var Model = (function (_EventEmitter) {
 			}
 		},
 		create: {
-			value: function create(properties, callback) {
-				var schema = this.schema;
-
-				properties = properties || {};
-
-				if (schema.isEdge) {
-					if (!properties["in"] || !properties.out) {
-						throw new Error("In out is not defined");
-					}
-
-					var from = properties["in"];
-					var to = properties.out;
-
-					delete properties["in"];
-					delete properties.out;
-
-					return this.createEdge(from, to, properties, callback);
-				}
-
-				return new Query(this, {}).create(properties, callback);
-			}
-		},
-		createEdge: {
-			value: function createEdge(from, to, properties, callback) {
-				var _this = this;
-
-				this.db.create("EDGE", this.name).from(from).to(to).set(properties).transform(function (record) {
-					return _this._createDocument(record);
-				}).one().then(function (item) {
-					callback(null, item);
-				}, callback);
-			}
-		},
-		remove: {
-			value: function remove(where, callback) {
-				return new Query(this, options).remove(where, callback);
-				/*
-    		this.db
-    			.delete()
-    			.from(this.name)
-    			.where(where)
-    			.scalar()
-    			.then(function(total) {
-    				callback(null, total);
-    			}, callback);*/
-			}
-		},
-		removeByRid: {
-			value: function removeByRid(rid, callback) {
-				this.db.record["delete"](rid).then(function (response) {
-					if (!response || !response["@rid"]) {
-						return callback(null, 0);
-					}
-
-					var currentRid = RidType.objectToString(response["@rid"]);
-					if (currentRid === rid) {
-						return callback(null, 1);
-					}
-
-					callback(null, 0);
-				}, callback);
-			}
-		},
-		removeEdgeByRid: {
-			value: function removeEdgeByRid(rid, callback) {
-				this.db["delete"]("EDGE", rid).scalar().then(function (affectedRows) {
-					callback(null, affectedRows);
-				}, callback);
-			}
-		},
-		removeVertexByRid: {
-			value: function removeVertexByRid(rid, callback) {
-				this.db["delete"]("VERTEX", rid).scalar().then(function (affectedRows) {
-					callback(null, affectedRows);
-				}, callback);
+			value: function create(doc, callback) {
+				return new Query(this, {}).create(doc, callback);
 			}
 		},
 		update: {
-			value: function update(where, properties, callback) {
-				this.db.update(this.name).set(properties).where(where).scalar().then(function (total) {
-					callback(null, total);
-				}, callback);
-			}
-		},
-		updateByRid: {
-			value: function updateByRid(rid, properties, callback) {
-				this.db.update(rid).set(properties).scalar().then(function (total) {
-					callback(null, total);
-				}, callback);
+			value: function update(conditions, doc, options, callback) {
+				return new Query(this, {}).update(conditions, doc, options, callback);
 			}
 		},
 		find: {
-			value: function find(where, options, callback) {
-				if (typeof options === "function") {
-					callback = options;
-					options = {};
-				}
-
-				options = options || {};
-
-				return new Query(this, options).find(where, callback);
+			value: function find(conditions, callback) {
+				return new Query(this, {}).find(conditions, callback);
 			}
 		},
 		findOne: {
-			value: function findOne(where, options, callback) {
-				if (typeof options === "function") {
-					callback = options;
-					options = {};
-				}
-
-				options = options || {};
-
-				return new Query(this, options).findOne(where, callback);
+			value: function findOne(conditions, callback) {
+				return new Query(this, {}).findOne(conditions, callback);
 			}
 		},
-		findByRid: {
-			value: function findByRid(rid, callback) {
-				var _this = this;
-
-				this.db.record.get(rid).then(function (record) {
-					callback(null, _this._createDocument(record));
-				}, callback);
+		remove: {
+			value: function remove(conditions, callback) {
+				return new Query(this, {}).remove(conditions, callback);
 			}
 		}
 	});
