@@ -22,6 +22,7 @@ export default class Document extends EventEmitter {
 		this._to = value;
 		return this;
 	}
+
 	model(name) {
 		return this._model.model(name);
 	}
@@ -121,11 +122,11 @@ export default class Document extends EventEmitter {
 	}
 
 	static findOne(conditions, callback) {
-		return this.model.findOne(conditions, callback);
+		return this._model.findOne(conditions, callback);
 	}
 
 	static find(conditions, callback) {
-		return this.model.find(conditions, callback);
+		return this._model.find(conditions, callback);
 	}
 
 	static create(properties, callback) {
@@ -133,11 +134,7 @@ export default class Document extends EventEmitter {
 	}
 
 	static remove(conditions, callback) {
-		return this.model.remove(conditions, callback);
-	}
-
-	static get model() {
-		throw new Error('You need to override model getter');
+		return this._model.remove(conditions, callback);
 	}
 
 	static createClass (model) {
@@ -146,7 +143,11 @@ export default class Document extends EventEmitter {
 				super(model, properties);
 			}
 
-			static get model() {
+			static model(modelName) {
+				return model.model(modelName);
+			}
+
+			static get _model() {
 				return model;
 			}
 

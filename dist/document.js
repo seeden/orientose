@@ -155,12 +155,12 @@ var Document = (function (_EventEmitter) {
 		},
 		findOne: {
 			value: function findOne(conditions, callback) {
-				return this.model.findOne(conditions, callback);
+				return this._model.findOne(conditions, callback);
 			}
 		},
 		find: {
 			value: function find(conditions, callback) {
-				return this.model.find(conditions, callback);
+				return this._model.find(conditions, callback);
 			}
 		},
 		create: {
@@ -170,12 +170,7 @@ var Document = (function (_EventEmitter) {
 		},
 		remove: {
 			value: function remove(conditions, callback) {
-				return this.model.remove(conditions, callback);
-			}
-		},
-		model: {
-			get: function () {
-				throw new Error("You need to override model getter");
+				return this._model.remove(conditions, callback);
 			}
 		},
 		createClass: {
@@ -191,6 +186,21 @@ var Document = (function (_EventEmitter) {
 
 					_createClass(DocumentModel, null, {
 						model: {
+							value: (function (_model) {
+								var _modelWrapper = function model(_x) {
+									return _model.apply(this, arguments);
+								};
+
+								_modelWrapper.toString = function () {
+									return _model.toString();
+								};
+
+								return _modelWrapper;
+							})(function (modelName) {
+								return model.model(modelName);
+							})
+						},
+						_model: {
 							get: function () {
 								return model;
 							}
