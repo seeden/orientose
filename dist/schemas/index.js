@@ -96,6 +96,11 @@ var Schema = (function (_EventEmitter) {
 				return this;
 			}
 		},
+		getSubdocumentSchemaConstructor: {
+			value: function getSubdocumentSchemaConstructor() {
+				return Schema;
+			}
+		},
 		_indexName: {
 			value: function _indexName(properties) {
 				var props = Object.keys(properties).map(function (prop) {
@@ -499,10 +504,11 @@ var Schema = (function (_EventEmitter) {
 				}
 
 				var type = options.isSchema ? options : options.type;
+				var SubSchema = this.getSubdocumentSchemaConstructor();
 
 				//create schema from plain object
 				if (_.isPlainObject(type)) {
-					type = Object.keys(type).length ? new Schema(type) : MixedType;
+					type = Object.keys(type).length ? new SubSchema(type) : MixedType;
 				}
 
 				var normalised = {

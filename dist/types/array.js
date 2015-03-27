@@ -15,10 +15,10 @@ var Type = _interopRequire(require("./type"));
 var Schema = _interopRequire(require("../schemas/index"));
 
 var ArrayType = (function (_Type) {
-	function ArrayType(data, prop) {
+	function ArrayType(data, prop, name) {
 		_classCallCheck(this, ArrayType);
 
-		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, prop);
+		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, prop, name);
 
 		if (!prop.item) {
 			throw new Error("Type of the array item is not defined");
@@ -78,10 +78,31 @@ var ArrayType = (function (_Type) {
 				return item ? item.value : item;
 			}
 		},
+		forEach: {
+			value: function forEach(fn) {
+				return this._value.forEach(function (item) {
+					fn(item.value);
+				});
+			}
+		},
+		map: {
+			value: function map(fn) {
+				return this._value.map(function (item) {
+					return fn(item.value);
+				});
+			}
+		},
 		toJSON: {
 			value: function toJSON(options) {
 				return this._value.map(function (item) {
 					return item.toJSON(options);
+				});
+			}
+		},
+		toObject: {
+			value: function toObject(options) {
+				return this._value.map(function (item) {
+					return item.toObject(options);
 				});
 			}
 		},

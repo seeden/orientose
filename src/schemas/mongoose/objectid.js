@@ -7,6 +7,10 @@ export default class ObjectId {
 		return this._value;
 	}
 
+	toJSON() {
+		return this.toString();
+	}
+
 	equals(id) {
 		return id && this.toString() === id.toString();
 	}

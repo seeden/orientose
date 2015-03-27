@@ -1,11 +1,31 @@
 import Type from './type';
+import _ from 'lodash';
 
 export default class ObjectType extends Type {
-	constructor(data, prop) {
-		super(data, prop);
+	constructor(data, prop, name) {
+		super(data, prop, name);
 
 		this._schema = prop.type;
-		this._value = new this._schema.DataClass();
+
+		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop));
+	}
+
+	_computeClassName(data, prop) {
+		var schemaType = prop.schemaType;
+		var options = prop.options;
+		var className = data._className;
+		var type = schemaType.getDbType(options);
+
+		if(type === 'EMBEDDED' && schemaType.isObject) {
+			return className + 'A' + _.capitalize(this.name);
+		} else if(type === 'EMBEDDEDLIST' && schemaType.isArray && prop.item) {
+			var item = prop.item;
+			if(item.schemaType.isObject) {
+				return className + 'A' + _.capitalize(propName);
+			}
+		}
+
+		return;
 	}
 
 	set(key, value) {
@@ -25,6 +45,10 @@ export default class ObjectType extends Type {
 
 	toJSON(options) {
 		return this._value.toJSON(options);
+	}
+
+	toObject(options) {
+		return this._value.toObject(options);
 	}
 
 	get isModified() {

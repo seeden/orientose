@@ -17,7 +17,7 @@ var Document = (function (_EventEmitter) {
 		properties = properties || {};
 
 		this._model = model;
-		this._data = new model.schema.DataClass(properties);
+		this._data = new model.schema.DataClass(properties, model.name);
 
 		this._from = null;
 		this._to = null;
@@ -78,6 +78,11 @@ var Document = (function (_EventEmitter) {
 				return this._data.toJSON(options);
 			}
 		},
+		toObject: {
+			value: function toObject(options) {
+				return this._data.toObject(options);
+			}
+		},
 		save: {
 			value: function save(callback) {
 				var _this = this;
@@ -93,10 +98,11 @@ var Document = (function (_EventEmitter) {
 							return callback(error);
 						}
 
-						var properties = _this.toJSON({
+						var properties = _this.toObject({
 							virtuals: false,
 							metadata: false,
-							modified: true
+							modified: true,
+							query: true
 						});
 
 						if (_this.isNew) {
@@ -166,6 +172,11 @@ var Document = (function (_EventEmitter) {
 		create: {
 			value: function create(properties, callback) {
 				return new this(properties).save(callback);
+			}
+		},
+		update: {
+			value: function update(conditions, doc, options, callback) {
+				return this._model.update(conditions, doc, options, callback);
 			}
 		},
 		remove: {

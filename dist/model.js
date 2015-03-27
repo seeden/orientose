@@ -57,6 +57,9 @@ var Model = (function (_EventEmitter) {
 			options = {};
 		}
 
+		options.dropUnusedProperties = options.dropUnusedProperties || false;
+		options.dropUnusedIndexes = options.dropUnusedIndexes || false;
+
 		callback = callback || function () {};
 
 		this._name = name;
@@ -120,6 +123,7 @@ var Model = (function (_EventEmitter) {
 				var db = this.db;
 				var className = this.name;
 				var schema = this.schema;
+				var model = this;
 
 				waterfall([function (callback) {
 					//todo speeed up for each class is same
@@ -139,6 +143,10 @@ var Model = (function (_EventEmitter) {
 				},
 				//remove unused indexes
 				function (indexes, callback) {
+					if (!model.options.dropUnusedIndexes) {
+						return callback(null, indexes);
+					}
+
 					each(indexes, function (index, callback) {
 						var definition = index.definition;
 						var type = index.type;
@@ -238,6 +246,10 @@ var Model = (function (_EventEmitter) {
 				},
 				//drop unused properties
 				function (OClass, oProperties, callback) {
+					if (!model.options.dropUnusedProperties) {
+						return callback(null, OClass, oProperties);
+					}
+
 					each(oProperties, function (prop, callback) {
 						if (schema.has(prop.name)) {
 							return callback(null);

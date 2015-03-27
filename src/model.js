@@ -30,6 +30,9 @@ export default class Model extends EventEmitter {
 			options = {};
 		}
 
+		options.dropUnusedProperties = options.dropUnusedProperties || false;
+		options.dropUnusedIndexes = options.dropUnusedIndexes || false;
+
 		callback = callback || function() {};
 
 		this._name = name;
@@ -82,6 +85,7 @@ export default class Model extends EventEmitter {
 		var db = this.db;
 		var className = this.name;
 		var schema = this.schema;
+		var model = this;
 
 		waterfall([
 			function(callback) {
@@ -102,6 +106,10 @@ export default class Model extends EventEmitter {
 			}, 
 			//remove unused indexes
 			function(indexes, callback) {
+				if(!model.options.dropUnusedIndexes) {
+					return callback(null, indexes);
+				}
+
 				each(indexes, function(index, callback) {
 					var { definition, type, name } = index;
 
@@ -197,6 +205,10 @@ export default class Model extends EventEmitter {
 			},
 			//drop unused properties
 			function(OClass, oProperties, callback) {
+				if(!model.options.dropUnusedProperties) {
+					return callback(null, OClass, oProperties);
+				}
+
 				each(oProperties, function(prop, callback) {
 					if(schema.has(prop.name)) {
 						return callback(null);

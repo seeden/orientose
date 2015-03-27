@@ -2,10 +2,14 @@ import Schema from '../index';
 import RID from '../../types/rid';
 import ObjectId from '../mongoose/objectid';
 
+function getDefaultClassName() {
+	return this._className;
+}
+
 export function prepareSchema(schema) {
 	schema.add({
-		'@type'    : { type: String, readonly: true, metadata: true },
-		'@class'   : { type: String, readonly: true, metadata: true },
+		'@type'    : { type: String, readonly: true, metadata: true, query: true, default: 'document' },
+		'@class'   : { type: String, readonly: true, metadata: true, query: true, default: getDefaultClassName},
 		'@rid'     : { type: RID, readonly: true, metadata: true },
 		'@version' : { type: Number, readonly: true, metadata: true },
 	});
@@ -15,13 +19,7 @@ export function prepareSchema(schema) {
 	});
 
 	schema.virtual('_id', { metadata: true }).get(function() {
-		var rid = this.get('@rid');
-
-		if(rid) {
-			return new ObjectId(rid);
-		}
-
-		return rid;
+		return this.get('@rid');
 	});	
 }
 
@@ -30,5 +28,9 @@ export default class OrientSchema extends Schema {
 		super(props, options);
 
 		prepareSchema(this);
+	}
+
+	getSubdocumentSchemaConstructor() {
+		return OrientSchema;
 	}
 }

@@ -60,6 +60,10 @@ export default class Schema extends EventEmitter {
 		return this;
 	}
 
+	getSubdocumentSchemaConstructor() {
+		return Schema;
+	}
+
 	_indexName(properties) {
 		var props = Object.keys(properties).map(function(prop) {
 			return prop.replace('.', '-')
@@ -419,11 +423,12 @@ export default class Schema extends EventEmitter {
 		}
 
 		var type = options.isSchema ? options : options.type;
+		var SubSchema = this.getSubdocumentSchemaConstructor();
 
 		//create schema from plain object
 		if(_.isPlainObject(type)) {
 			type = Object.keys(type).length
-				? new Schema(type)
+				? new SubSchema(type)
 				: MixedType;
 		}
 

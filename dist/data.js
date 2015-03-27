@@ -21,7 +21,7 @@ var debug = _interopRequire(require("debug"));
 var log = debug("orientose:data");
 
 var Data = (function () {
-	function Data(schema, properties) {
+	function Data(schema, properties, className) {
 		var _this = this;
 
 		_classCallCheck(this, Data);
@@ -30,9 +30,10 @@ var Data = (function () {
 
 		this._schema = schema;
 		this._data = {};
+		this._className = className;
 
 		schema.traverse(function (propName, prop) {
-			_this._data[propName] = new prop.schemaType(_this, prop);
+			_this._data[propName] = new prop.schemaType(_this, prop, propName);
 		});
 
 		this.set(properties);
@@ -80,6 +81,32 @@ var Data = (function () {
 				return json;
 			}
 		},
+		toObject: {
+			value: function toObject(options) {
+				var json = {};
+
+				options = options || {};
+
+				for (var propName in this._data) {
+					var prop = this._data[propName];
+					if (prop instanceof VirtualType) {
+						continue;
+					}
+
+					if (prop.isMetadata && !options.query) {
+						continue;
+					}
+
+					if (options.modified && !prop.isModified && !prop.hasDefault) {
+						continue;
+					}
+
+					json[propName] = prop.toObject(options);
+				}
+
+				return json;
+			}
+		},
 		isModified: {
 			value: function isModified(path) {
 				var pos = path.indexOf(".");
@@ -102,6 +129,7 @@ var Data = (function () {
 
 				var data = this._data[currentKey].value;
 				if (!data || !data.get) {
+					return;
 					throw new Error("Subdocument is not defined or it is not an object");
 				}
 
@@ -130,6 +158,7 @@ var Data = (function () {
 
 				var data = this._data[currentKey].value;
 				if (!data || !data.get) {
+					return;
 					throw new Error("Subdocument is not defined or it is not an object");
 				}
 
@@ -170,6 +199,7 @@ var Data = (function () {
 
 				var data = this._data[currentKey].value;
 				if (!data || !data.set) {
+					return this;
 					throw new Error("Subdocument is not defined or it is not an object");
 				}
 
@@ -186,11 +216,10 @@ var Data = (function () {
 		createClass: {
 			value: function createClass(schema) {
 				var DataClass = (function (_Data) {
-					function DataClass(properties, callback) {
+					function DataClass(properties, className) {
 						_classCallCheck(this, DataClass);
 
-						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties);
-						this._callback = callback || function () {};
+						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties, className);
 					}
 
 					_inherits(DataClass, _Data);

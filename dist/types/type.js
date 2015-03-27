@@ -5,10 +5,10 @@ var _createClass = (function () { function defineProperties(target, props) { for
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 var Type = (function () {
-	function Type(data, prop) {
+	function Type(data, prop, name) {
 		_classCallCheck(this, Type);
 
-		if (!data || !prop) {
+		if (!data || !prop || !name) {
 			throw new Error("Data or prop is undefined");
 		}
 
@@ -17,6 +17,7 @@ var Type = (function () {
 		this._data = data;
 		this._prop = prop;
 		this._options = options;
+		this._name = name;
 
 		this._default = options["default"];
 		this._value = void 0;
@@ -47,6 +48,11 @@ var Type = (function () {
 				return this._prop;
 			}
 		},
+		name: {
+			get: function () {
+				return this._name;
+			}
+		},
 		hasDefault: {
 			get: function () {
 				return typeof this._default !== "undefined";
@@ -69,7 +75,7 @@ var Type = (function () {
 
 				var defaultValue = this._default;
 				if (typeof defaultValue === "function") {
-					defaultValue = defaultValue();
+					defaultValue = defaultValue.apply(this.data);
 				}
 
 				return this._preDeserialize(this._preSerialize(defaultValue));
@@ -137,7 +143,14 @@ var Type = (function () {
 			}
 		},
 		toJSON: {
-			value: function toJSON() {
+			value: function toJSON(options) {
+				var value = this.toObject(options);
+
+				return value && value.toJSON ? value.toJSON(options) : value;
+			}
+		},
+		toObject: {
+			value: function toObject(options) {
 				return this.value;
 			}
 		}

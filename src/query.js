@@ -4,7 +4,9 @@ import _ from 'lodash';
 import Document from './document';
 import GraphSchema from './schemas/graph';
 import EdgeSchema from './schemas/edge';
-
+import { RecordID } from 'oriento';
+import LogicOperators from './constants/logicoperators';
+import ComparisonOperators from './constants/comparisonoperators';
 
 const log = debug('orientose:query');
 
@@ -29,6 +31,8 @@ export default class Query {
 			throw new Error('Model is not defined');
 		}
 
+		this._paramIndex = 1;
+
 		this._model = model;
 		this._target = model.name;
 
@@ -44,6 +48,8 @@ export default class Query {
 
 		this._operation = null;
 
+		this._params = {};
+
 		this._operators = [];
 		this._set    = null;
 	}
@@ -56,10 +62,120 @@ export default class Query {
 		return this.model.schema;
 	}
 
+	paramify (key) {
+  		return key.replace(/([^A-Za-z0-9])/g, '');
+	}
+
+	nextParamName(propertyName) {
+		return this.paramify(propertyName)+'_op_'+this._paramIndex++;
+	}
+
+	addParam(paramName, value) {
+		this._params[paramName] = value;
+	}
+
+	addParams(params) {
+		params = params || {};
+		extend(this._params, params);
+	}
+
+	createComparisonQuery(propertyName, operator, value) {
+		var paramName = this.nextParamName(propertyName);
+
+		if(value === null) {
+			if(operator === '=') {
+				return propertyName + ' IS NULL';
+			} else if(operator === '!=' || operator === '<>' || operator === 'NOT') {
+				return propertyName + ' IS NOT NULL';
+			}
+		}
+
+		this.addParam(paramName, value);
+		return propertyName + ' ' + operator + ' :' + paramName;		
+	}
+
+	queryLanguage(conditions) {
+		var items = [];
+
+		Object.keys(conditions).forEach(propertyName => {
+			if(propertyName === '_id') {
+				propertyName = '@rid';
+			}
+
+			var value = conditions[propertyName];
+			if(typeof value === 'undefined') {
+				return;
+			}
+
+			if(LogicOperators[propertyName]) {
+				var subQueries = [];
+				
+				value.forEach(conditions => {
+					var query = this.queryLanguage(conditions);
+					if(!query) {
+						return;
+					}
+
+					subQueries.push(query);
+				});
+
+				if(!subQueries.length) {
+					return;
+				} else if(subQueries.length === 1) {
+					return items.push(subQueries[0]);
+				}
+
+				var query = '(' + subQueries.join(') ' + LogicOperators[propertyName] + ' (') + ')';
+				return items.push(query);
+			}
+
+			if(value instanceof RecordID) {
+				value = value.toString();
+			}
+
+			if(!_.isObject(value)) {
+				var query = this.createComparisonQuery(propertyName, '=', value);
+				return items.push(query);
+			}
+
+			Object.keys(value).forEach(operation => {
+				var operationValue = value[operation];
+				if(value instanceof RecordID) {
+					value = value.toString();
+				}
+
+				var query = null;
+				if(ComparisonOperators[operation]) {
+					query = this.createComparisonQuery(propertyName, 
+						ComparisonOperators[operation], operationValue);
+				}
+
+				if(!query) {
+					return;
+				}
+
+				items.push(query);
+				
+			});
+		});
+
+		if(!items.length) {
+			return null;
+		}
+
+		return items.join(' AND ');
+	}
+
 	operator(operator, conditions, callback) {
+		var query = this.queryLanguage(conditions);
+
+		if(!query) {
+			return this;
+		}
+
 		this._operators.push({
 			type: operator,
-			conditions: conditions
+			query: query
 		});
 
 		return this;
@@ -98,7 +214,7 @@ export default class Query {
 		return self;
 	}
 
-	and(expressions) {
+	and(conditions) {
 		var self = this;
 		conditions.forEach(function(condition) {
 			self = self.operator(Operator.AND, condition);
@@ -107,16 +223,10 @@ export default class Query {
 	}	
 
 	where(conditions, callback) {
-		var self = this;
-		if(conditions.$or) {
-			self = self.or(conditions.$or);
-		} else if(conditions.$and) {
-			self = self.or(conditions.$and);
-		} else {
-			self = self.operator(Operator.WHERE, conditions);
-		}
+		conditions = conditions || {};
+		this.operator(Operator.WHERE, conditions);
 
-		return self.condExec(callback);
+		return this.condExec(callback);
 	}
 
 	operation(operation) {
@@ -300,8 +410,10 @@ export default class Query {
 		}
 
 		this._operators.forEach(function(operator) {
-			query = query[operator.type](operator.conditions);
+			query = query[operator.type](operator.query);
 		});
+
+		query.addParams(this._params);
 
 		if(!this._scalar && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 			query = query.transform(function(record) {
@@ -346,6 +458,9 @@ export default class Query {
 			}
 
 			callback(null, results);
-		}, callback);
+		}, function(err) {
+			log('Error: ' + err.message);
+			callback(err);
+		});
 	}		
 }

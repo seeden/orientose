@@ -1,26 +1,35 @@
-import StringType from './string';
+import Type from './type';
 import _ from 'lodash';
+import orineto, { RecordID } from 'oriento';
 
-export default class RIDType extends StringType {
+export default class RIDType extends Type {
 	_serialize(value) {
-		if(_.isPlainObject(value)) {
-			value = RIDType.objectToString(value);
-		} else if (value && value['@rid']) {
-			value = value['@rid'];
+		var record = new RecordID(value);
+
+		if(!record) {
+			throw new Error('Problem with parsing of RID: ' + value);
 		}
 
-		return super._serialize(value);
+		return record;
+	}
+
+	_deserialize(value) {
+		return value;
+	}
+
+	toObject(options) {
+		return this.value;
+	}
+
+	toJSON(options) {
+		return this.value ? this.value.toString() : null;
+	}
+
+	static toString() {
+		return 'String';
 	}
 
 	static getDbType(options) {
 		return 'LINK';
-	}
-
-	static objectToString(obj) {
-		if(obj && typeof obj.cluster!=='undefined' && typeof obj.position!=='undefined') {
-			return '#' + obj.cluster + ':' + obj.position;
-		}
-
-		return null;
 	}
 }

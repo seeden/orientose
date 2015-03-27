@@ -1,10 +1,6 @@
 import Type from './type';
 
 export default class Virtual extends Type {
-	constructor (data, prop) {
-		super(data, prop);
-	}
-
 	_preSerialize(value) {
 		return this._serialize(value);
 	}

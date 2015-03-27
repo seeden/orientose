@@ -1,6 +1,6 @@
 export default class Type {
-	constructor (data, prop) {
-		if(!data || !prop) {
+	constructor (data, prop, name) {
+		if(!data || !prop || !name) {
 			throw new Error('Data or prop is undefined');
 		}
 
@@ -9,6 +9,7 @@ export default class Type {
 		this._data     = data;
 		this._prop     = prop;
 		this._options  = options;
+		this._name     = name;
 
 		this._default  = options.default;
 		this._value    = void 0;
@@ -33,6 +34,10 @@ export default class Type {
 	get prop() {
 		return this._prop;
 	}
+
+	get name() {
+		return this._name;
+	}	
 
 	get hasDefault() {
 		return typeof this._default !== 'undefined';
@@ -75,7 +80,7 @@ export default class Type {
 
 		var defaultValue = this._default;
 		if(typeof defaultValue === 'function') {
-			defaultValue = defaultValue();
+			defaultValue = defaultValue.apply(this.data);
 		} 
 
 		return this._preDeserialize(this._preSerialize(defaultValue));
@@ -114,7 +119,15 @@ export default class Type {
 		//parent.childChanged(this);
 	}
 
-	toJSON() {
+	toJSON(options) {
+		var value = this.toObject(options);
+
+		return value && value.toJSON 
+			? value.toJSON(options) 
+			: value;
+	}
+
+	toObject(options) {
 		return this.value;
 	}
 

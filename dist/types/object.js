@@ -12,19 +12,41 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 
 var Type = _interopRequire(require("./type"));
 
+var _ = _interopRequire(require("lodash"));
+
 var ObjectType = (function (_Type) {
-	function ObjectType(data, prop) {
+	function ObjectType(data, prop, name) {
 		_classCallCheck(this, ObjectType);
 
-		_get(Object.getPrototypeOf(ObjectType.prototype), "constructor", this).call(this, data, prop);
+		_get(Object.getPrototypeOf(ObjectType.prototype), "constructor", this).call(this, data, prop, name);
 
 		this._schema = prop.type;
-		this._value = new this._schema.DataClass();
+
+		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop));
 	}
 
 	_inherits(ObjectType, _Type);
 
 	_createClass(ObjectType, {
+		_computeClassName: {
+			value: function _computeClassName(data, prop) {
+				var schemaType = prop.schemaType;
+				var options = prop.options;
+				var className = data._className;
+				var type = schemaType.getDbType(options);
+
+				if (type === "EMBEDDED" && schemaType.isObject) {
+					return className + "A" + _.capitalize(this.name);
+				} else if (type === "EMBEDDEDLIST" && schemaType.isArray && prop.item) {
+					var item = prop.item;
+					if (item.schemaType.isObject) {
+						return className + "A" + _.capitalize(propName);
+					}
+				}
+
+				return;
+			}
+		},
 		set: {
 			value: function set(key, value) {
 				this._value[key] = value;
@@ -46,6 +68,11 @@ var ObjectType = (function (_Type) {
 		toJSON: {
 			value: function toJSON(options) {
 				return this._value.toJSON(options);
+			}
+		},
+		toObject: {
+			value: function toObject(options) {
+				return this._value.toObject(options);
 			}
 		},
 		isModified: {

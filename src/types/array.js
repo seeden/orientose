@@ -2,8 +2,8 @@ import Type from './type';
 import Schema from '../schemas/index';
 
 export default class ArrayType extends Type {
-	constructor(data, prop) {
-		super(data, prop);
+	constructor(data, prop, name) {
+		super(data, prop, name);
 
 		if(!prop.item) {
 			throw new Error('Type of the array item is not defined');
@@ -51,9 +51,27 @@ export default class ArrayType extends Type {
 		return item ? item.value : item;
 	}
 
+	forEach(fn) {
+		return this._value.forEach(function(item) {
+			fn(item.value);
+		});
+	}
+
+	map(fn) {
+		return this._value.map(function(item) {
+			return fn(item.value);
+		});
+	}	
+
 	toJSON(options) {
 		return this._value.map(function(item) {
 			return item.toJSON(options);
+		});
+	}
+
+	toObject(options) {
+		return this._value.map(function(item) {
+			return item.toObject(options);
 		});
 	}
 

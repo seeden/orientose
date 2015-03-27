@@ -5,12 +5,12 @@ export default class Document extends EventEmitter {
 		properties = properties || {};
 
 		this._model = model;
-		this._data  = new model.schema.DataClass(properties); 
+		this._data  = new model.schema.DataClass(properties, model.name); 
 
 		this._from = null;
 		this._to = null;
 
-		this._isNew = true;	
+		this._isNew = true;
 	}
 
 	from(value) {
@@ -54,6 +54,10 @@ export default class Document extends EventEmitter {
 		return this._data.toJSON(options);
 	}
 
+	toObject(options) {
+		return this._data.toObject(options);
+	}
+
 	save(callback) {
 		var hooks = this._model.schema.hooks;
 		hooks.execPre('validate', this, error => {
@@ -66,10 +70,11 @@ export default class Document extends EventEmitter {
 					return callback(error);
 				}
 
-				var properties = this.toJSON({
+				var properties = this.toObject({
 					virtuals: false,
 					metadata: false,
-					modified: true
+					modified: true,
+					query   : true
 				});
 
 				if(this.isNew) {
@@ -122,19 +127,28 @@ export default class Document extends EventEmitter {
 	}
 
 	static findOne(conditions, callback) {
-		return this._model.findOne(conditions, callback);
+		return this._model
+			.findOne(conditions, callback);
 	}
 
 	static find(conditions, callback) {
-		return this._model.find(conditions, callback);
+		return this._model
+			.find(conditions, callback);
 	}
 
 	static create(properties, callback) {
-		return new this(properties).save(callback);
+		return new this(properties)
+			.save(callback);
+	}
+
+	static update(conditions, doc, options, callback) {
+		return this._model
+			.update(conditions, doc, options, callback);
 	}
 
 	static remove(conditions, callback) {
-		return this._model.remove(conditions, callback);
+		return this._model
+			.remove(conditions, callback);
 	}
 
 	static createClass (model) {

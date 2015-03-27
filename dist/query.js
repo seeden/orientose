@@ -18,6 +18,12 @@ var GraphSchema = _interopRequire(require("./schemas/graph"));
 
 var EdgeSchema = _interopRequire(require("./schemas/edge"));
 
+var RecordID = require("oriento").RecordID;
+
+var LogicOperators = _interopRequire(require("./constants/logicoperators"));
+
+var ComparisonOperators = _interopRequire(require("./constants/comparisonoperators"));
+
 var log = debug("orientose:query");
 
 var Operation = {
@@ -43,6 +49,8 @@ var Query = (function () {
 			throw new Error("Model is not defined");
 		}
 
+		this._paramIndex = 1;
+
 		this._model = model;
 		this._target = model.name;
 
@@ -57,6 +65,8 @@ var Query = (function () {
 		this._to = null;
 
 		this._operation = null;
+
+		this._params = {};
 
 		this._operators = [];
 		this._set = null;
@@ -73,6 +83,116 @@ var Query = (function () {
 				return this.model.schema;
 			}
 		},
+		paramify: {
+			value: function paramify(key) {
+				return key.replace(/([^A-Za-z0-9])/g, "");
+			}
+		},
+		nextParamName: {
+			value: function nextParamName(propertyName) {
+				return this.paramify(propertyName) + "_op_" + this._paramIndex++;
+			}
+		},
+		addParam: {
+			value: function addParam(paramName, value) {
+				this._params[paramName] = value;
+			}
+		},
+		addParams: {
+			value: function addParams(params) {
+				params = params || {};
+				extend(this._params, params);
+			}
+		},
+		createComparisonQuery: {
+			value: function createComparisonQuery(propertyName, operator, value) {
+				var paramName = this.nextParamName(propertyName);
+
+				if (value === null) {
+					if (operator === "=") {
+						return propertyName + " IS NULL";
+					} else if (operator === "!=" || operator === "<>" || operator === "NOT") {
+						return propertyName + " IS NOT NULL";
+					}
+				}
+
+				this.addParam(paramName, value);
+				return propertyName + " " + operator + " :" + paramName;
+			}
+		},
+		queryLanguage: {
+			value: function queryLanguage(conditions) {
+				var _this = this;
+
+				var items = [];
+
+				Object.keys(conditions).forEach(function (propertyName) {
+					if (propertyName === "_id") {
+						propertyName = "@rid";
+					}
+
+					var value = conditions[propertyName];
+					if (typeof value === "undefined") {
+						return;
+					}
+
+					if (LogicOperators[propertyName]) {
+						var subQueries = [];
+
+						value.forEach(function (conditions) {
+							var query = _this.queryLanguage(conditions);
+							if (!query) {
+								return;
+							}
+
+							subQueries.push(query);
+						});
+
+						if (!subQueries.length) {
+							return;
+						} else if (subQueries.length === 1) {
+							return items.push(subQueries[0]);
+						}
+
+						var query = "(" + subQueries.join(") " + LogicOperators[propertyName] + " (") + ")";
+						return items.push(query);
+					}
+
+					if (value instanceof RecordID) {
+						value = value.toString();
+					}
+
+					if (!_.isObject(value)) {
+						var query = _this.createComparisonQuery(propertyName, "=", value);
+						return items.push(query);
+					}
+
+					Object.keys(value).forEach(function (operation) {
+						var operationValue = value[operation];
+						if (value instanceof RecordID) {
+							value = value.toString();
+						}
+
+						var query = null;
+						if (ComparisonOperators[operation]) {
+							query = _this.createComparisonQuery(propertyName, ComparisonOperators[operation], operationValue);
+						}
+
+						if (!query) {
+							return;
+						}
+
+						items.push(query);
+					});
+				});
+
+				if (!items.length) {
+					return null;
+				}
+
+				return items.join(" AND ");
+			}
+		},
 		operator: {
 			value: (function (_operator) {
 				var _operatorWrapper = function operator(_x, _x2, _x3) {
@@ -85,9 +205,15 @@ var Query = (function () {
 
 				return _operatorWrapper;
 			})(function (operator, conditions, callback) {
+				var query = this.queryLanguage(conditions);
+
+				if (!query) {
+					return this;
+				}
+
 				this._operators.push({
 					type: operator,
-					conditions: conditions
+					query: query
 				});
 
 				return this;
@@ -127,7 +253,7 @@ var Query = (function () {
 			}
 		},
 		and: {
-			value: function and(expressions) {
+			value: function and(conditions) {
 				var self = this;
 				conditions.forEach(function (condition) {
 					self = self.operator(Operator.AND, condition);
@@ -137,16 +263,10 @@ var Query = (function () {
 		},
 		where: {
 			value: function where(conditions, callback) {
-				var self = this;
-				if (conditions.$or) {
-					self = self.or(conditions.$or);
-				} else if (conditions.$and) {
-					self = self.or(conditions.$and);
-				} else {
-					self = self.operator(Operator.WHERE, conditions);
-				}
+				conditions = conditions || {};
+				this.operator(Operator.WHERE, conditions);
 
-				return self.condExec(callback);
+				return this.condExec(callback);
 			}
 		},
 		operation: {
@@ -376,8 +496,10 @@ var Query = (function () {
 				}
 
 				this._operators.forEach(function (operator) {
-					query = query[operator.type](operator.conditions);
+					query = query[operator.type](operator.query);
 				});
+
+				query.addParams(this._params);
 
 				if (!this._scalar && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 					query = query.transform(function (record) {
@@ -420,7 +542,10 @@ var Query = (function () {
 					}
 
 					callback(null, results);
-				}, callback);
+				}, function (err) {
+					log("Error: " + err.message);
+					callback(err);
+				});
 			}
 		}
 	});
