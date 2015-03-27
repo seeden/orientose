@@ -34,12 +34,12 @@ var Virtual = (function (_Type) {
 		},
 		_serialize: {
 			value: function _serialize(value) {
-				this.applySet(this.data, value);
+				this.applySet(this.mainData, value);
 			}
 		},
 		_deserialize: {
 			value: function _deserialize() {
-				return this.applyGet(this.data);
+				return this.applyGet(this.mainData);
 			}
 		},
 		applyGet: {

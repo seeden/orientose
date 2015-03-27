@@ -6,15 +6,17 @@ import debug from 'debug';
 const log = debug('orientose:data');
 
 export default class Data {
-	constructor(schema, properties, className) {
+	constructor(schema, properties, className, mainData) {
 		properties = properties || {};
+		mainData = mainData || this;
 
 		this._schema = schema;
 		this._data = {};
-		this._className = className;	
+		this._className = className;
+		this._mainData = mainData;	
 
 		schema.traverse((propName, prop) => {
-			this._data[propName] = new prop.schemaType(this, prop, propName);
+			this._data[propName] = new prop.schemaType(this, prop, propName, mainData);
 		});	
 
 		this.set(properties);
@@ -41,6 +43,7 @@ export default class Data {
 
 		for(var propName in this._data) {
 			var prop = this._data[propName];
+
 			if(prop instanceof VirtualType && !options.virtuals) {
 				continue;
 			}
@@ -66,6 +69,7 @@ export default class Data {
 
 		for(var propName in this._data) {
 			var prop = this._data[propName];
+
 			if(prop instanceof VirtualType) {
 				continue;
 			}
@@ -88,7 +92,7 @@ export default class Data {
 		var pos = path.indexOf('.');
 		if(pos === -1) {
 			if(!this._data[path]) {
-				log('Path not exists:' + path);
+				log('isModified Path not exists:' + path);
 				return;
 			}
 			
@@ -99,7 +103,7 @@ export default class Data {
 		var newPath = path.substr(pos + 1);
 
 		if(!this._data[currentKey]) {
-			log('Path not exists:' + currentKey);
+			log('isModified deep Path not exists:' + currentKey);
 			return;
 		}		
 
@@ -116,7 +120,7 @@ export default class Data {
 		var pos = path.indexOf('.');
 		if(pos === -1) {
 			if(!this._data[path]) {
-				log('Path not exists:' + path);
+				log('get Path not exists:' + path);
 				return;
 			}
 
@@ -127,7 +131,7 @@ export default class Data {
 		var newPath = path.substr(pos + 1);
 
 		if(!this._data[currentKey]) {
-			log('Path not exists:' + currentKey);
+			log('get deep Path not exists:' + currentKey, path, newPath);
 			return;
 		}
 
@@ -152,7 +156,7 @@ export default class Data {
 		if(pos === -1) {
 			var property = this._data[path];
 			if(!property) {
-				log('Path not exists:' + path);
+				log('set Path not exists:' + path);
 				return this;
 			}
 			
@@ -168,7 +172,7 @@ export default class Data {
 		var newPath = path.substr(pos + 1);
 
 		if(!this._data[currentKey]) {
-			log('Path not exists:' + currentKey);
+			log('set deep Path not exists:' + currentKey);
 			return;
 		}
 
@@ -188,8 +192,8 @@ export default class Data {
 
 	static createClass(schema) {
 		class DataClass extends Data {
-			constructor (properties, className) {
-				super(schema, properties, className);
+			constructor (properties, className, mainData) {
+				super(schema, properties, className, mainData);
 			}
 		};
 

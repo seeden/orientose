@@ -144,7 +144,7 @@ describe('Connection', function() {
 			user.points.should.equal(30);
 			user.niceName.should.equal('Mr. Zlatko Fedor');
 			user.hooked.should.equal('Hooked text');
-			user.rid.should.equal(rid);
+			user.rid.toString().should.equal(rid.toString());
 
 			user.address.street.should.equal('Huskova 19');
 			user.address.city.should.equal('Kosice');

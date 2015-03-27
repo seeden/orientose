@@ -1,15 +1,17 @@
 export default class Type {
-	constructor (data, prop, name) {
-		if(!data || !prop || !name) {
+	constructor (data, prop, name, mainData) {
+		if(!data || !prop || !name || !mainData) {
 			throw new Error('Data or prop is undefined');
 		}
 
 		var options = prop.options || {};
 
 		this._data     = data;
+		this._mainData = mainData;
 		this._prop     = prop;
 		this._options  = options;
 		this._name     = name;
+
 
 		this._default  = options.default;
 		this._value    = void 0;
@@ -22,6 +24,10 @@ export default class Type {
 	get data() {
 		return this._data;
 	}
+
+	get mainData() {
+		return this._mainData;
+	}	
 
 	get original() {
 		return this._original;

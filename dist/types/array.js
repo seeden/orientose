@@ -15,10 +15,10 @@ var Type = _interopRequire(require("./type"));
 var Schema = _interopRequire(require("../schemas/index"));
 
 var ArrayType = (function (_Type) {
-	function ArrayType(data, prop, name) {
+	function ArrayType(data, prop, name, mainData) {
 		_classCallCheck(this, ArrayType);
 
-		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, prop, name);
+		_get(Object.getPrototypeOf(ArrayType.prototype), "constructor", this).call(this, data, prop, name, mainData);
 
 		if (!prop.item) {
 			throw new Error("Type of the array item is not defined");
@@ -33,7 +33,7 @@ var ArrayType = (function (_Type) {
 	_createClass(ArrayType, {
 		_createItem: {
 			value: function _createItem(value) {
-				var item = new this.prop.item.schemaType(this.data, this.prop.item);
+				var item = new this.prop.item.schemaType(this.data, this.prop.item, this.name, this.mainData);
 				item.value = value;
 
 				return item;

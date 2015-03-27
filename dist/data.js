@@ -21,19 +21,21 @@ var debug = _interopRequire(require("debug"));
 var log = debug("orientose:data");
 
 var Data = (function () {
-	function Data(schema, properties, className) {
+	function Data(schema, properties, className, mainData) {
 		var _this = this;
 
 		_classCallCheck(this, Data);
 
 		properties = properties || {};
+		mainData = mainData || this;
 
 		this._schema = schema;
 		this._data = {};
 		this._className = className;
+		this._mainData = mainData;
 
 		schema.traverse(function (propName, prop) {
-			_this._data[propName] = new prop.schemaType(_this, prop, propName);
+			_this._data[propName] = new prop.schemaType(_this, prop, propName, mainData);
 		});
 
 		this.set(properties);
@@ -63,6 +65,7 @@ var Data = (function () {
 
 				for (var propName in this._data) {
 					var prop = this._data[propName];
+
 					if (prop instanceof VirtualType && !options.virtuals) {
 						continue;
 					}
@@ -89,6 +92,7 @@ var Data = (function () {
 
 				for (var propName in this._data) {
 					var prop = this._data[propName];
+
 					if (prop instanceof VirtualType) {
 						continue;
 					}
@@ -112,7 +116,7 @@ var Data = (function () {
 				var pos = path.indexOf(".");
 				if (pos === -1) {
 					if (!this._data[path]) {
-						log("Path not exists:" + path);
+						log("isModified Path not exists:" + path);
 						return;
 					}
 
@@ -123,7 +127,7 @@ var Data = (function () {
 				var newPath = path.substr(pos + 1);
 
 				if (!this._data[currentKey]) {
-					log("Path not exists:" + currentKey);
+					log("isModified deep Path not exists:" + currentKey);
 					return;
 				}
 
@@ -141,7 +145,7 @@ var Data = (function () {
 				var pos = path.indexOf(".");
 				if (pos === -1) {
 					if (!this._data[path]) {
-						log("Path not exists:" + path);
+						log("get Path not exists:" + path);
 						return;
 					}
 
@@ -152,7 +156,7 @@ var Data = (function () {
 				var newPath = path.substr(pos + 1);
 
 				if (!this._data[currentKey]) {
-					log("Path not exists:" + currentKey);
+					log("get deep Path not exists:" + currentKey, path, newPath);
 					return;
 				}
 
@@ -178,7 +182,7 @@ var Data = (function () {
 				if (pos === -1) {
 					var property = this._data[path];
 					if (!property) {
-						log("Path not exists:" + path);
+						log("set Path not exists:" + path);
 						return this;
 					}
 
@@ -193,7 +197,7 @@ var Data = (function () {
 				var newPath = path.substr(pos + 1);
 
 				if (!this._data[currentKey]) {
-					log("Path not exists:" + currentKey);
+					log("set deep Path not exists:" + currentKey);
 					return;
 				}
 
@@ -216,10 +220,10 @@ var Data = (function () {
 		createClass: {
 			value: function createClass(schema) {
 				var DataClass = (function (_Data) {
-					function DataClass(properties, className) {
+					function DataClass(properties, className, mainData) {
 						_classCallCheck(this, DataClass);
 
-						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties, className);
+						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties, className, mainData);
 					}
 
 					_inherits(DataClass, _Data);

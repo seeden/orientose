@@ -5,16 +5,17 @@ var _createClass = (function () { function defineProperties(target, props) { for
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
 var Type = (function () {
-	function Type(data, prop, name) {
+	function Type(data, prop, name, mainData) {
 		_classCallCheck(this, Type);
 
-		if (!data || !prop || !name) {
+		if (!data || !prop || !name || !mainData) {
 			throw new Error("Data or prop is undefined");
 		}
 
 		var options = prop.options || {};
 
 		this._data = data;
+		this._mainData = mainData;
 		this._prop = prop;
 		this._options = options;
 		this._name = name;
@@ -31,6 +32,11 @@ var Type = (function () {
 		data: {
 			get: function () {
 				return this._data;
+			}
+		},
+		mainData: {
+			get: function () {
+				return this._mainData;
 			}
 		},
 		original: {

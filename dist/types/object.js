@@ -15,14 +15,14 @@ var Type = _interopRequire(require("./type"));
 var _ = _interopRequire(require("lodash"));
 
 var ObjectType = (function (_Type) {
-	function ObjectType(data, prop, name) {
+	function ObjectType(data, prop, name, mainData) {
 		_classCallCheck(this, ObjectType);
 
-		_get(Object.getPrototypeOf(ObjectType.prototype), "constructor", this).call(this, data, prop, name);
+		_get(Object.getPrototypeOf(ObjectType.prototype), "constructor", this).call(this, data, prop, name, mainData);
 
 		this._schema = prop.type;
 
-		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop));
+		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop), mainData);
 	}
 
 	_inherits(ObjectType, _Type);

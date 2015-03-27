@@ -196,6 +196,9 @@ export default class Query {
 			if(conditions instanceof Document) {
 				this._target = conditions;
 				conditions = void 0;
+			} else if(conditions instanceof RecordID) {
+				this._target = conditions;
+				conditions = void 0;
 			} else {
 				this.where(conditions);
 			}

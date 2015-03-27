@@ -2,12 +2,12 @@ import Type from './type';
 import _ from 'lodash';
 
 export default class ObjectType extends Type {
-	constructor(data, prop, name) {
-		super(data, prop, name);
+	constructor(data, prop, name, mainData) {
+		super(data, prop, name, mainData);
 
 		this._schema = prop.type;
 
-		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop));
+		this._value = new this._schema.DataClass({}, this._computeClassName(data, prop), mainData);
 	}
 
 	_computeClassName(data, prop) {

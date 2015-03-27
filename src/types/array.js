@@ -2,8 +2,8 @@ import Type from './type';
 import Schema from '../schemas/index';
 
 export default class ArrayType extends Type {
-	constructor(data, prop, name) {
-		super(data, prop, name);
+	constructor(data, prop, name, mainData) {
+		super(data, prop, name, mainData);
 
 		if(!prop.item) {
 			throw new Error('Type of the array item is not defined');
@@ -14,7 +14,7 @@ export default class ArrayType extends Type {
 	}
 
 	_createItem(value) {
-		var item = new this.prop.item.schemaType(this.data, this.prop.item);
+		var item = new this.prop.item.schemaType(this.data, this.prop.item, this.name, this.mainData);
 		item.value = value;
 
 		return item;

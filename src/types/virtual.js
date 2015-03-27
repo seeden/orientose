@@ -10,11 +10,11 @@ export default class Virtual extends Type {
 	}
 
 	_serialize(value) {
-		this.applySet(this.data, value);
+		this.applySet(this.mainData, value);
 	}
 
 	_deserialize() {
-		return this.applyGet(this.data);
+		return this.applyGet(this.mainData);
 	}
 
 	static toString() {
