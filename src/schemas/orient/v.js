@@ -7,7 +7,7 @@ export default class V extends VertexSchema {
 		options.extend = options.extend || 'V';
 
 		super(props, options);
-
+		var self = this;
 		prepareSchema(this);
 	}
 }

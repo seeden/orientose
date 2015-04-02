@@ -4,6 +4,9 @@ import orineto, { RecordID } from 'oriento';
 
 export default class RIDType extends Type {
 	_serialize(value) {
+		// if ( value[0] !== "#" ) {
+			// value = "#" + value;
+		// }
 		var record = new RecordID(value);
 
 		if(!record) {
@@ -14,6 +17,8 @@ export default class RIDType extends Type {
 	}
 
 	_deserialize(value) {
+
+		// return value.substr(1);
 		return value;
 	}
 
@@ -22,7 +27,7 @@ export default class RIDType extends Type {
 	}
 
 	toJSON(options) {
-		return this.value ? this.value.toString() : null;
+		return this.value ? this.value : null;
 	}
 
 	static toString() {

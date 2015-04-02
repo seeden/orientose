@@ -40,6 +40,11 @@ export default class Document extends EventEmitter {
 		return this._isNew;
 	}
 
+	transaction(s){
+		this._transaction = s;
+		return this;
+	}
+
 	isModified(path) {
 		return this._data.isModified(path);
 	}
@@ -60,70 +65,79 @@ export default class Document extends EventEmitter {
 
 	save(callback) {
 		var hooks = this._model.schema.hooks;
-		hooks.execPre('validate', this, error => {
-			if(error) {
-				return callback(error);
-			}			
-
-			hooks.execPre('save', this, error => {
+		var self = this;
+		return new Promise(function(resolve, reject){
+			hooks.execPre('validate', self, error => {
 				if(error) {
-					return callback(error);
+					return reject(error);
 				}
 
-				var properties = this.toObject({
-					virtuals: false,
-					metadata: false,
-					modified: true,
-					query   : true
-				});
-
-				if(this.isNew) {
-					this._model.create(properties).from(this._from).to(this._to).exec((error, user) => {
-						if(error) {
-							return callback(error);
-						}
-
-						this.setupData(user.toJSON({
-							virtuals: false
-						}));
-
-						callback(null, this);
-					});
-
-					return;
-				} 
-
-				this._model.update(this, properties, (err, total) => {
-					if(err) {
-						return callback(err);
+				hooks.execPre('save', self, error => {
+					if(error) {
+						return reject(error);
 					}
 
-					this.setupData(properties);
-					callback(null, this);
+					var properties = self.toObject({
+						virtuals: false,
+						metadata: false,
+						modified: true,
+						query   : true
+					});
+					var model = self._model;
+					if ( self._transaction ) {
+						model.transaction(self._transaction);
+					}
+					if(self.isNew) {
+						return model.create(properties).from(self._from).to(self._to).exec().then((user) => {
+							self.setupData(user.toJSON({
+								virtuals: false
+							}));
+
+							return resolve(self);
+						}).catch(reject);
+					} 
+
+					return model.update(self, properties).then((total) => {
+
+						self.setupData(properties);
+						return resolve(self);
+					}).exec().catch(reject);
 				});
+			})
+		});
+	}
+
+	remove() {
+		var model = this._model;
+		var hooks = model.schema.hooks;
+		var self = this;
+
+		if(this.isNew) {
+			return Promise.resolve(this);
+		}
+		return new Promise((resolve, reject) => {
+			hooks.execPre('remove', self, (error) => {
+				if(error) {
+					return reject(error);
+				}
+
+				model.remove(self, true).then(function(result){
+					resolve(result);
+				}).catch(reject);
 			});
 		});
 	}
 
-	remove(callback) {
-		var model = this._model;
-		var hooks = model.schema.hooks;
+	static exec(){
+		return this._model.exec();
+	}
 
-		if(this.isNew) {
-			return callback(null, this);
-		}
-
-		hooks.execPre('remove', this, (error) => {
-			if(error) {
-				return callback(error);
-			}
-
-			model.remove(this, callback);
-		});
+	static where(conditions) {
+		return this._model.where(conditions);
 	}
 
 	static findById(id, callback) {
-		this.findOne(id, callback);
+		return this.findOne(id, callback);
 	}
 
 	static findOne(conditions, callback) {

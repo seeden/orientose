@@ -5,6 +5,7 @@ import ReadyState from './constants/readystate';
 
 import SchemaV from './schemas/orient/v';
 import SchemaE from './schemas/orient/e';
+import Promise from 'bluebird';
 
 export default class Connection extends EventEmitter {
 	constructor (options, dbOptions) {
@@ -46,36 +47,30 @@ export default class Connection extends EventEmitter {
 		return this._server;
 	}
 
-	model (name, schema, options, callback) {
-		if(typeof options === 'function') {
-			callback = options;
-			options = {};
-		}
+	model (name, schema, options) {
 
 		options = options || {};
-		callback = callback || function(){};
 
 		if(typeof schema === 'undefined') {
 			if(!this._models[name]) {
 				throw new Error('Model does not exists');
 			}
-
 			return this._models[name].DocumentClass;
 		}
 
 		if(this._models[name]) {
-			throw new Error('Model already exists');
+			return Promise.reject(new Error('Model already exists'))
 		}
+		var self = this;
+		return new Promise(function(resolve, reject){
+			self._models[name] = new Model(name, schema, self, options, function(err, model) {
+				if(err) {
+					return reject(err);
+				}
+				resolve(model.DocumentClass);
+			});
+		})
 
-		this._models[name] = new Model(name, schema, this, options, function(err, model) {
-			if(err) {
-				return callback(err);
-			}
-
-			callback(null, model.DocumentClass);
-		});
-
-		return this._models[name].DocumentClass;
 	}
 
 	/*

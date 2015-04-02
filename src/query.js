@@ -7,6 +7,7 @@ import EdgeSchema from './schemas/edge';
 import { RecordID } from 'oriento';
 import LogicOperators from './constants/logicoperators';
 import ComparisonOperators from './constants/comparisonoperators';
+import Promise from 'bluebird';
 
 const log = debug('orientose:query');
 
@@ -46,12 +47,21 @@ export default class Query {
 		this._from   = null;
 		this._to     = null;
 
+		
 		this._operation = null;
 
 		this._params = {};
 
 		this._operators = [];
 		this._set    = null;
+		var self = this;
+		for ( var name in this._model._documentClass) {
+			this[name] = (function(name){
+				return function(){
+					return self._model._documentClass[name].apply(self, arguments);
+				};
+			})(name);
+		}
 	}
 
 	get model() {
@@ -203,10 +213,7 @@ export default class Query {
 				this.where(conditions);
 			}
 		}
-
-		return callback 
-			? this.exec(callback) 
-			: this;
+		return this; // making exec implicit
 	}
 
 	or(conditions) {
@@ -304,7 +311,6 @@ export default class Query {
 			callback = doc;
 			doc = {};
 		}
-
 		return this
 			.operation(Operation.INSERT)
 			.set(doc)
@@ -315,7 +321,7 @@ export default class Query {
 	/**
 	update(conditions, update, [options], [callback])
 	*/
-	update(conditions, doc, options, callback) {
+	update(conditions, doc, options) {
 		if(typeof options === 'function') {
 			callback = options;
 			options = {};
@@ -330,31 +336,36 @@ export default class Query {
 			.limit(options.multi ? null : 1)
 			.set(doc)
 			.scalar(true)
-			.condExec(conditions, callback);
+			.condExec(conditions, true);
 	}	
 
 	//find([conditions], [callback])
-	find(conditions, callback) {
+	find(conditions) {
 		return this
 			.operation(Operation.SELECT)
-			.condExec(conditions, callback);
+			.condExec(conditions, true);
 	}
 
 	//findOne([criteria], [callback])
-	findOne(conditions, callback) {
+	findOne(conditions) {
 		return this
 			.operation(Operation.SELECT)
 			.limit(1)
 			.first(true)
-			.condExec(conditions, callback);	
+			.condExec(conditions, true);	
 	}	
 
 	//remove([conditions], [callback])
-	remove(conditions, callback) {
+	remove(conditions) {
 		return this
 			.operation(Operation.DELETE)
 			.scalar(true)
-			.condExec(conditions, callback);
+			.condExec(conditions, true);
+	}
+
+	transaction(transaction){
+		this._transaction = transaction;
+		return this;
 	}
 
 	exec(callback) {
@@ -364,16 +375,25 @@ export default class Query {
 		var schema = model.schema;
 		var operation = this._operation;
 		if(!operation) {
-			throw new Error('Operation is not defined');
+			this.operation(Operation.SELECT);
+			operation = this._operation;
+			// lets default this as select unless otherwise
+			// return Promise.reject(new Error('Operation is not defined'));
 		}
 
-		var query = new OrientoQuery(model.connection.db);
+
+		var query;
+		if ( this._transaction ) {
+			query = this._transaction;
+		} else {
+			query = new OrientoQuery(model.connection.db);
+		}
 		var q = query;
 
 		var target = this._target && this._target['@rid'] 
 			? this._target['@rid'] 
 			: this._target;
-
+			console.log('AT LEAST WE REACHED HERE?!?!?');
 
 		var isGraph = schema instanceof GraphSchema;
 		if(isGraph) {
@@ -449,7 +469,7 @@ export default class Query {
 
 		return query.exec().then(results => {
 			if(!results) {
-				return callback(null, results);
+				return Promise.resolve(results);
 			}
 
 			if(this._first) {
@@ -459,11 +479,7 @@ export default class Query {
 			if(this._scalar && results.length) {
 				results = parseInt(results[0]);
 			}
-
-			callback(null, results);
-		}, function(err) {
-			log('Error: ' + err.message);
-			callback(err);
+			return Promise.resolve(results);
 		});
 	}		
 }

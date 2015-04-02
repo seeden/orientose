@@ -34,7 +34,10 @@ var ObjectType = (function (_Type) {
 				var options = prop.options;
 				var className = data._className;
 				var type = schemaType.getDbType(options);
-
+				var propType = prop.type;
+				if (propType._options.className || options.className) {
+					return propType._options.className || options.className;
+				}
 				if (type === "EMBEDDED" && schemaType.isObject) {
 					return className + "A" + _.capitalize(this.name);
 				} else if (type === "EMBEDDEDLIST" && schemaType.isArray && prop.item) {

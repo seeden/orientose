@@ -24,7 +24,7 @@ var V = (function (_VertexSchema) {
 		options.extend = options.extend || "V";
 
 		_get(Object.getPrototypeOf(V.prototype), "constructor", this).call(this, props, options);
-
+		var self = this;
 		prepareSchema(this);
 	}
 

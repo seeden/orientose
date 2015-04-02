@@ -3,6 +3,7 @@ import Kareem from 'kareem';
 import _ from 'lodash';
 import VirtualType from '../types/virtual';
 import Data from '../data';
+import supportedTypes from '../types'
 import convertType from '../types/convert';
 import MixedType from '../types/mixed';
 import IndexType from '../constants/indextype';
@@ -430,6 +431,17 @@ export default class Schema extends EventEmitter {
 			type = Object.keys(type).length
 				? new SubSchema(type)
 				: MixedType;
+		}
+
+		if ( _.isString(type) ) {
+			var ttype = type.toLowerCase();
+			for ( var name in supportedTypes ) {
+				var tname = name.toLowerCase();
+				if ( ttype === tname ) {
+					type = supportedTypes[name];
+					break;
+				}
+			}
 		}
 
 		var normalised = {

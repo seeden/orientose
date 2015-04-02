@@ -14,6 +14,8 @@ var Model = _interopRequire(require("./model"));
 
 var Type = _interopRequire(require("./types/index"));
 
+var Oriento = _interopRequire(require("oriento"));
+
 SchemaOrient.E = SchemaE;
 SchemaOrient.V = SchemaV;
 SchemaOrient.ObjectId = Type.Rid; //mongoose compatible
@@ -22,5 +24,6 @@ Connection.Schema = SchemaOrient;
 
 Connection.Model = Model;
 Connection.Type = Type;
+Connection.Oriento = Oriento;
 
 module.exports = Connection;

@@ -20,6 +20,8 @@ var SchemaV = _interopRequire(require("./schemas/orient/v"));
 
 var SchemaE = _interopRequire(require("./schemas/orient/e"));
 
+var Promise = _interopRequire(require("bluebird"));
+
 var Connection = (function (_EventEmitter) {
 	function Connection(options, dbOptions) {
 		var _this = this;
@@ -70,36 +72,29 @@ var Connection = (function (_EventEmitter) {
 			}
 		},
 		model: {
-			value: function model(name, schema, options, callback) {
-				if (typeof options === "function") {
-					callback = options;
-					options = {};
-				}
+			value: function model(name, schema, options) {
 
 				options = options || {};
-				callback = callback || function () {};
 
 				if (typeof schema === "undefined") {
 					if (!this._models[name]) {
 						throw new Error("Model does not exists");
 					}
-
 					return this._models[name].DocumentClass;
 				}
 
 				if (this._models[name]) {
-					throw new Error("Model already exists");
+					return Promise.reject(new Error("Model already exists"));
 				}
-
-				this._models[name] = new Model(name, schema, this, options, function (err, model) {
-					if (err) {
-						return callback(err);
-					}
-
-					callback(null, model.DocumentClass);
+				var self = this;
+				return new Promise(function (resolve, reject) {
+					self._models[name] = new Model(name, schema, self, options, function (err, model) {
+						if (err) {
+							return reject(err);
+						}
+						resolve(model.DocumentClass);
+					});
 				});
-
-				return this._models[name].DocumentClass;
 			}
 		},
 		modelNames: {

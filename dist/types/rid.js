@@ -32,6 +32,9 @@ var RIDType = (function (_Type) {
 	_createClass(RIDType, {
 		_serialize: {
 			value: function _serialize(value) {
+				// if ( value[0] !== "#" ) {
+				// value = "#" + value;
+				// }
 				var record = new RecordID(value);
 
 				if (!record) {
@@ -43,6 +46,8 @@ var RIDType = (function (_Type) {
 		},
 		_deserialize: {
 			value: function _deserialize(value) {
+
+				// return value.substr(1);
 				return value;
 			}
 		},
@@ -53,7 +58,7 @@ var RIDType = (function (_Type) {
 		},
 		toJSON: {
 			value: function toJSON(options) {
-				return this.value ? this.value.toString() : null;
+				return this.value ? this.value : null;
 			}
 		}
 	}, {

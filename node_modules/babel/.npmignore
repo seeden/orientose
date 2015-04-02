@@ -1,0 +1,16 @@
+node_modules
+*.log
+*.cache
+lib/babel/transformation/templates
+test
+benchmark
+Makefile
+.*
+dist
+tests.json
+CHANGELOG.md
+.package.json
+coverage
+vendor
+packages
+src

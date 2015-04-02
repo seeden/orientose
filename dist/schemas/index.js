@@ -22,6 +22,8 @@ var VirtualType = _interopRequire(require("../types/virtual"));
 
 var Data = _interopRequire(require("../data"));
 
+var supportedTypes = _interopRequire(require("../types"));
+
 var convertType = _interopRequire(require("../types/convert"));
 
 var MixedType = _interopRequire(require("../types/mixed"));
@@ -509,6 +511,17 @@ var Schema = (function (_EventEmitter) {
 				//create schema from plain object
 				if (_.isPlainObject(type)) {
 					type = Object.keys(type).length ? new SubSchema(type) : MixedType;
+				}
+
+				if (_.isString(type)) {
+					var ttype = type.toLowerCase();
+					for (var name in supportedTypes) {
+						var tname = name.toLowerCase();
+						if (ttype === tname) {
+							type = supportedTypes[name];
+							break;
+						}
+					}
 				}
 
 				var normalised = {

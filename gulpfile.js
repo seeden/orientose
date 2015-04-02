@@ -6,7 +6,8 @@ gulp.task('test', function () {
     return gulp.src('./tests/**/*.js')
     .pipe(babel())
     .pipe(mocha({
-    	timeout: 20000
+    	timeout: 20000,
+    	ui: 'bdd'
     }));
 });
 

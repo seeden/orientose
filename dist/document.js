@@ -61,6 +61,12 @@ var Document = (function (_EventEmitter) {
 				return this._isNew;
 			}
 		},
+		transaction: {
+			value: function transaction(s) {
+				this._transaction = s;
+				return this;
+			}
+		},
 		isModified: {
 			value: function isModified(path) {
 				return this._data.isModified(path);
@@ -85,78 +91,85 @@ var Document = (function (_EventEmitter) {
 		},
 		save: {
 			value: function save(callback) {
-				var _this = this;
-
 				var hooks = this._model.schema.hooks;
-				hooks.execPre("validate", this, function (error) {
-					if (error) {
-						return callback(error);
-					}
-
-					hooks.execPre("save", _this, function (error) {
+				var self = this;
+				return new Promise(function (resolve, reject) {
+					hooks.execPre("validate", self, function (error) {
 						if (error) {
-							return callback(error);
+							return reject(error);
 						}
 
-						var properties = _this.toObject({
-							virtuals: false,
-							metadata: false,
-							modified: true,
-							query: true
-						});
-
-						if (_this.isNew) {
-							_this._model.create(properties).from(_this._from).to(_this._to).exec(function (error, user) {
-								if (error) {
-									return callback(error);
-								}
-
-								_this.setupData(user.toJSON({
-									virtuals: false
-								}));
-
-								callback(null, _this);
-							});
-
-							return;
-						}
-
-						_this._model.update(_this, properties, function (err, total) {
-							if (err) {
-								return callback(err);
+						hooks.execPre("save", self, function (error) {
+							if (error) {
+								return reject(error);
 							}
 
-							_this.setupData(properties);
-							callback(null, _this);
+							var properties = self.toObject({
+								virtuals: false,
+								metadata: false,
+								modified: true,
+								query: true
+							});
+							var model = self._model;
+							if (self._transaction) {
+								model.transaction(self._transaction);
+							}
+							if (self.isNew) {
+								return model.create(properties).from(self._from).to(self._to).exec().then(function (user) {
+									self.setupData(user.toJSON({
+										virtuals: false
+									}));
+
+									return resolve(self);
+								})["catch"](reject);
+							}
+
+							return model.update(self, properties).then(function (total) {
+
+								self.setupData(properties);
+								return resolve(self);
+							}).exec()["catch"](reject);
 						});
 					});
 				});
 			}
 		},
 		remove: {
-			value: function remove(callback) {
-				var _this = this;
-
+			value: function remove() {
 				var model = this._model;
 				var hooks = model.schema.hooks;
+				var self = this;
 
 				if (this.isNew) {
-					return callback(null, this);
+					return Promise.resolve(this);
 				}
+				return new Promise(function (resolve, reject) {
+					hooks.execPre("remove", self, function (error) {
+						if (error) {
+							return reject(error);
+						}
 
-				hooks.execPre("remove", this, function (error) {
-					if (error) {
-						return callback(error);
-					}
-
-					model.remove(_this, callback);
+						model.remove(self, true).then(function (result) {
+							resolve(result);
+						})["catch"](reject);
+					});
 				});
 			}
 		}
 	}, {
+		exec: {
+			value: function exec() {
+				return this._model.exec();
+			}
+		},
+		where: {
+			value: function where(conditions) {
+				return this._model.where(conditions);
+			}
+		},
 		findById: {
 			value: function findById(id, callback) {
-				this.findOne(id, callback);
+				return this.findOne(id, callback);
 			}
 		},
 		findOne: {

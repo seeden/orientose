@@ -18,9 +18,24 @@ export function prepareSchema(schema) {
 		return this.get('@rid');
 	});
 
-	schema.virtual('_id', { metadata: true }).get(function() {
+	var _id = schema.virtual('_id', { metadata: true });
+
+	_id.get(function() {
 		return this.get('@rid');
-	});	
+	});
+	_id.set(function(id){
+		return this.set('@rid');
+	})
+	var id = schema.virtual('id', { metadata: true });
+	id.get(function() {
+		return this.get('@rid').toString().substr(1);
+	});
+	id.set(function(id){
+		if ( id[0] !== "#") {
+			id = "#"+id;
+		}
+		return this.set('@rid', id)
+	})
 }
 
 export default class OrientSchema extends Schema {

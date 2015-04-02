@@ -77,6 +77,9 @@ var Model = (function (_EventEmitter) {
 
 				callback(err, model);
 			});
+		} else {
+			// i believe it should still call
+			callback(null, this);
 		}
 	}
 
@@ -224,7 +227,7 @@ var Model = (function (_EventEmitter) {
 				var model = this;
 				var db = this.db;
 				var schema = this.schema;
-				var className = this.name;
+				var className = schema._options.className || this.name;
 				callback = callback || function () {};
 
 				waterfall([
@@ -363,7 +366,6 @@ var Model = (function (_EventEmitter) {
 				if (className) {
 					model = this.model(className);
 				}
-
 				if (!model) {
 					throw new Error("There is no model for class: " + className);
 				}
@@ -371,29 +373,55 @@ var Model = (function (_EventEmitter) {
 				return new model({}).setupData(properties);
 			}
 		},
+		transaction: {
+			value: (function (_transaction) {
+				var _transactionWrapper = function transaction(_x) {
+					return _transaction.apply(this, arguments);
+				};
+
+				_transactionWrapper.toString = function () {
+					return _transaction.toString();
+				};
+
+				return _transactionWrapper;
+			})(function (transaction) {
+				this._transaction = transaction;
+				return this;
+			})
+		},
+		createQuery: {
+			value: function createQuery(options) {
+				return new Query(this, options);
+			}
+		},
+		where: {
+			value: function where(conditions) {
+				return this.createQuery({}).where(conditions);
+			}
+		},
 		create: {
 			value: function create(doc, callback) {
-				return new Query(this, {}).create(doc, callback);
+				return this.createQuery({}).create(doc, callback);
 			}
 		},
 		update: {
 			value: function update(conditions, doc, options, callback) {
-				return new Query(this, {}).update(conditions, doc, options, callback);
+				return this.createQuery({}).update(conditions, doc, options, callback);
 			}
 		},
 		find: {
 			value: function find(conditions, callback) {
-				return new Query(this, {}).find(conditions, callback);
+				return this.createQuery({}).find(conditions, callback);
 			}
 		},
 		findOne: {
 			value: function findOne(conditions, callback) {
-				return new Query(this, {}).findOne(conditions, callback);
+				return this.createQuery({}).findOne(conditions, callback);
 			}
 		},
 		remove: {
 			value: function remove(conditions, callback) {
-				return new Query(this, {}).remove(conditions, callback);
+				return this.createQuery({}).remove(conditions, callback);
 			}
 		}
 	});

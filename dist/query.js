@@ -24,6 +24,8 @@ var LogicOperators = _interopRequire(require("./constants/logicoperators"));
 
 var ComparisonOperators = _interopRequire(require("./constants/comparisonoperators"));
 
+var Promise = _interopRequire(require("bluebird"));
+
 var log = debug("orientose:query");
 
 var Operation = {
@@ -70,6 +72,14 @@ var Query = (function () {
 
 		this._operators = [];
 		this._set = null;
+		var self = this;
+		for (var name in this._model._documentClass) {
+			this[name] = (function (name) {
+				return function () {
+					return self._model._documentClass[name].apply(self, arguments);
+				};
+			})(name);
+		}
 	}
 
 	_createClass(Query, {
@@ -242,8 +252,7 @@ var Query = (function () {
 						this.where(conditions);
 					}
 				}
-
-				return callback ? this.exec(callback) : this;
+				return this; // making exec implicit
 			}
 		},
 		or: {
@@ -396,7 +405,6 @@ var Query = (function () {
 					callback = doc;
 					doc = {};
 				}
-
 				return this.operation(Operation.INSERT).set(doc).first(true).condExec(callback);
 			}
 		},
@@ -406,7 +414,7 @@ var Query = (function () {
    update(conditions, update, [options], [callback])
    */
 
-			value: function update(conditions, doc, options, callback) {
+			value: function update(conditions, doc, options) {
 				if (typeof options === "function") {
 					callback = options;
 					options = {};
@@ -416,32 +424,48 @@ var Query = (function () {
 					throw new Error("One of parameters is missing");
 				}
 
-				return this.operation(Operation.UPDATE).limit(options.multi ? null : 1).set(doc).scalar(true).condExec(conditions, callback);
+				return this.operation(Operation.UPDATE).limit(options.multi ? null : 1).set(doc).scalar(true).condExec(conditions, true);
 			}
 		},
 		find: {
 
 			//find([conditions], [callback])
 
-			value: function find(conditions, callback) {
-				return this.operation(Operation.SELECT).condExec(conditions, callback);
+			value: function find(conditions) {
+				return this.operation(Operation.SELECT).condExec(conditions, true);
 			}
 		},
 		findOne: {
 
 			//findOne([criteria], [callback])
 
-			value: function findOne(conditions, callback) {
-				return this.operation(Operation.SELECT).limit(1).first(true).condExec(conditions, callback);
+			value: function findOne(conditions) {
+				return this.operation(Operation.SELECT).limit(1).first(true).condExec(conditions, true);
 			}
 		},
 		remove: {
 
 			//remove([conditions], [callback])
 
-			value: function remove(conditions, callback) {
-				return this.operation(Operation.DELETE).scalar(true).condExec(conditions, callback);
+			value: function remove(conditions) {
+				return this.operation(Operation.DELETE).scalar(true).condExec(conditions, true);
 			}
+		},
+		transaction: {
+			value: (function (_transaction) {
+				var _transactionWrapper = function transaction(_x8) {
+					return _transaction.apply(this, arguments);
+				};
+
+				_transactionWrapper.toString = function () {
+					return _transaction.toString();
+				};
+
+				return _transactionWrapper;
+			})(function (transaction) {
+				this._transaction = transaction;
+				return this;
+			})
 		},
 		exec: {
 			value: function exec(callback) {
@@ -453,13 +477,22 @@ var Query = (function () {
 				var schema = model.schema;
 				var operation = this._operation;
 				if (!operation) {
-					throw new Error("Operation is not defined");
+					this.operation(Operation.SELECT);
+					operation = this._operation;
+					// lets default this as select unless otherwise
+					// return Promise.reject(new Error('Operation is not defined'));
 				}
 
-				var query = new OrientoQuery(model.connection.db);
+				var query;
+				if (this._transaction) {
+					query = this._transaction;
+				} else {
+					query = new OrientoQuery(model.connection.db);
+				}
 				var q = query;
 
 				var target = this._target && this._target["@rid"] ? this._target["@rid"] : this._target;
+				console.log("AT LEAST WE REACHED HERE?!?!?");
 
 				var isGraph = schema instanceof GraphSchema;
 				if (isGraph) {
@@ -533,7 +566,7 @@ var Query = (function () {
 
 				return query.exec().then(function (results) {
 					if (!results) {
-						return callback(null, results);
+						return Promise.resolve(results);
 					}
 
 					if (_this._first) {
@@ -543,11 +576,7 @@ var Query = (function () {
 					if (_this._scalar && results.length) {
 						results = parseInt(results[0]);
 					}
-
-					callback(null, results);
-				}, function (err) {
-					log("Error: " + err.message);
-					callback(err);
+					return Promise.resolve(results);
 				});
 			}
 		}

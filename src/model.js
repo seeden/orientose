@@ -50,6 +50,9 @@ export default class Model extends EventEmitter {
 
 				callback(err, model);
 			});	
+		} else {
+			// i believe it should still call
+			callback(null, this);
 		}
 	}
 
@@ -183,7 +186,7 @@ export default class Model extends EventEmitter {
 		var model = this;
 		var db = this.db;
 		var schema = this.schema;
-		var className = this.name;
+		var className = schema._options.className || this.name;
 		callback = callback || function() {};
 
 		waterfall([
@@ -324,7 +327,6 @@ export default class Model extends EventEmitter {
 		if(className) {
 			model = this.model(className);
 		}
-
 		if(!model) {
 			throw new Error('There is no model for class: ' + className);
 		}
@@ -333,28 +335,40 @@ export default class Model extends EventEmitter {
 			.setupData(properties);
 	}
 
+	transaction(transaction) {
+		this._transaction = transaction;
+		return this;
+	}
+	createQuery(options){
+		return new Query(this, options);
+	}
+
+	where(conditions) {
+		return this.createQuery({}).where(conditions);
+	}
+
 	create (doc, callback) {
-		return new Query(this, {})
+		return this.createQuery({})
 			.create(doc, callback);
 	}
 
 	update (conditions, doc, options, callback) {
-		return new Query(this, {})
+		return this.createQuery({})
 			.update(conditions, doc, options, callback);
 	}
 
 	find (conditions, callback) {
-		return new Query(this, {})
+		return this.createQuery({})
 			.find(conditions, callback);
 	}
 
 	findOne (conditions, callback) {
-		return new Query(this, {})
+		return this.createQuery({})
 			.findOne(conditions, callback);
 	}	
 
 	remove (conditions, callback) {
-		return new Query(this, {})
+		return this.createQuery({})
 			.remove(conditions, callback);
 	}
 }

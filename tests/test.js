@@ -19,7 +19,7 @@ describe('Schema', function() {
 
 		data.name.should.equal('Zlatko Fedor');
 	});
-});	
+});
 
 describe('Connection', function() {
 	var schema = null;
@@ -83,21 +83,17 @@ describe('Connection', function() {
 			host: 'localhost',
     		port: 2424,
     		username: 'root',
-    		password: 'hello'
+    		password: 'happy'
 		}, 'GratefulDeadConcerts');
-	});	
+	});
 
 	it('should be able to create a model', function(done) {
-		connection.model('User', schema, function(err, UserModel) {
-			if(err) {
-				throw err;
-			}
-
+		connection.model('User', schema).then(function(UserModel) {
 			User = UserModel;
 			User.getStaticValue().should.equal('Static value');
 
 			done();
-		});
+		}).catch(done);
 	});
 
 	var rid = null;
@@ -119,26 +115,17 @@ describe('Connection', function() {
 
 		user1.isNew.should.equal(true);
 
-
-		user1.save(function(err, userSaved) {
-			if(err) {
-				throw err;
-			}
-
+		user1.save().then(function(userSaved) {
 			userSaved.hooked.should.equal('Hooked text');
 
 			rid = userSaved.rid;
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 
 	it('should be able to find a document', function(done) {
-		User.findOne(rid, function(err, user) {
-			if(err) {
-				throw err;
-			}
-
+		User.findOne(rid).then(function(user) {
 			user.name.should.equal('Zlatko Fedor');
 			user.isAdmin.should.equal(false);
 			user.points.should.equal(30);
@@ -150,14 +137,11 @@ describe('Connection', function() {
 			user.address.city.should.equal('Kosice');
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to use toJSON', function(done) {
-		User.findOne(rid, function(err, user) {
-			if(err) {
-				throw err;
-			}
+		User.findOne(rid).then(function(user) {
 
 			var json = user.toJSON({
 				virtuals: true
@@ -174,14 +158,11 @@ describe('Connection', function() {
 			json.address.city.should.equal('Kosice');
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to set properties by path', function(done) {
-		User.findOne(rid, function(err, user) {
-			if(err) {
-				throw err;
-			}
+		User.findOne(rid).then(function(user) {
 
 			user.set({
 				'address.street': 'Svabska',
@@ -199,73 +180,61 @@ describe('Connection', function() {
 			user.get('address.street').should.equal('Svabska');
 
 			done();
-		});
-	});		
+		}).catch(done);
+	});
 
 	it('should be able to remove a document', function(done) {
-		User.remove(rid, function(err, total) {
-			if(err) {
-				throw err;
-			}
-			
+		User.remove(rid).then(function(total) {
+
 			total.should.equal(1);
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to get User model', function(done) {
 		var UserModel = connection.model('User');
 		UserModel.should.equal(User);
 		done();
-	});	
-});	
+	});
+});
 
-describe('V', function() {	
+describe('V', function() {
 	it('should be able to create model Person extended from V', function(done) {
 		var personSchema = new Schema.V({
 			name: { type: String }
 		});
 
-		var Person = connection.model('Person', personSchema, function(err) {
-			if(err) {
-				throw err;
-			}
+		var Person = connection.model('Person', personSchema).then(function() {
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to create document1', function(done) {
 		var Person = connection.model('Person');
 
 		new Person({
 			name: 'Zlatko Fedor'
-		}).save(function(err, person) {
-			if(err) {
-				throw err;
-			}	
+		}).save().then(function(person) {
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to create document2', function(done) {
 		var Person = connection.model('Person');
 
 		new Person({
 			name: 'Luca'
-		}).save(function(err, person) {
-			if(err) {
-				throw err;
-			}	
+		}).save().then(function(person) {
 
 			done();
-		});
-	});	
-});	
+		}).catch(done);
+	});
+});
 
-describe('E', function() {	
+describe('E', function() {
 	it('should be able to create edge model extended from E', function(done) {
 		var followSchema = new Schema.E({
 			when: { type: Date, default: Date.now, required: true }
@@ -273,13 +242,10 @@ describe('E', function() {
 			unique: true
 		});
 
-		var Follow = connection.model('Follow', followSchema, function(err) {
-			if(err) {
-				throw err;
-			}
+		var Follow = connection.model('Follow', followSchema).then(function() {
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	var edge = null;
 	var p1 = null;
@@ -289,84 +255,45 @@ describe('E', function() {
 		var Follow = connection.model('Follow');
 		var Person = connection.model('Person');
 
-
-		waterfall([
-			function(callback) {
-				Person.findOne({
-					name: 'Zlatko Fedor'
-				}, callback);
-			},
-			function(person1, callback) {
-				p1 = person1;
-
-				Person.findOne({
-					name: 'Luca'
-				}, function(err, person2) {
-					if(err) {
-						return callback(err);
-					}
-
-					p2 = person2;
-
-					callback(null, person1, person2);
-				});
-			},
-			function(p1, p2, callback) {
-			
-				new Follow({
-				}).from(p1).to(p2).save(function(err, follow) {
-					if(err) {
-						return callback(err);
-					}
-
-					edge = follow;
-
-
-					callback(null);
-				});
-			}
-		], function(err) {
-			if(err) {
-				throw err;
-			}
-
+		Person.findOne({
+			name: 'Zlatko Fedor'
+		}).then(function(person1) {
+			p1 = person1;
+			return Promise.all([p1, Person.findOne({name: 'Luca'})]);
+		}).spread(function(p1, person2) {
+			p2 = person2;
+			var follow = new Follow({
+			}).from(p1).to(p2);
+			return follow.save();
+		}).then(function(follow){
+			edge = follow;
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to remove edge', function(done) {
-		edge.remove(function(err, total) {
-			if(err) {
-				throw err;
-			}
-
+		edge.remove().then(function(total) {
+			console.log("here?");
 			total.should.equal(1);
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to remove vertex p1', function(done) {
-		p1.remove(function(err, total) {
-			if(err) {
-				throw err;
-			}
-
+		p1.remove().then(function(total) {
 			total.should.equal(1);
 
 			done();
-		});
-	});	
+		}).catch(done);
+	});
 
 	it('should be able to remove vertex p2', function(done) {
-		p2.remove(function(err, total) {
-			if(err) {
-				throw err;
-			}
+		p2.remove().then(function(total) {
 
 			total.should.equal(1);
 
 			done();
-		});
-	});			
+		}).catch(done);
+	});
 });
