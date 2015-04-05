@@ -52,6 +52,9 @@ export default class Document extends EventEmitter {
 	setupData(properties) {
 		this._data.setupData(properties);
 		this._isNew = false;
+		if ( require('util').isFunction(this.afterLoad) ) {
+			this.afterLoad();
+		}
 		return this;
 	}
 
@@ -83,6 +86,7 @@ export default class Document extends EventEmitter {
 						modified: true,
 						query   : true
 					});
+
 					var model = self._model;
 					if ( self._transaction ) {
 						model.transaction(self._transaction);
@@ -97,11 +101,11 @@ export default class Document extends EventEmitter {
 						}).catch(reject);
 					} 
 
-					return model.update(self, properties).then((total) => {
+					return model.update(self, properties).exec().then((total) => {
 
 						self.setupData(properties);
 						return resolve(self);
-					}).exec().catch(reject);
+					}).catch(reject);
 				});
 			})
 		});

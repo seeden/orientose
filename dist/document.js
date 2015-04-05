@@ -76,6 +76,9 @@ var Document = (function (_EventEmitter) {
 			value: function setupData(properties) {
 				this._data.setupData(properties);
 				this._isNew = false;
+				if (require("util").isFunction(this.afterLoad)) {
+					this.afterLoad();
+				}
 				return this;
 			}
 		},
@@ -110,6 +113,7 @@ var Document = (function (_EventEmitter) {
 								modified: true,
 								query: true
 							});
+
 							var model = self._model;
 							if (self._transaction) {
 								model.transaction(self._transaction);
@@ -124,11 +128,11 @@ var Document = (function (_EventEmitter) {
 								})["catch"](reject);
 							}
 
-							return model.update(self, properties).then(function (total) {
+							return model.update(self, properties).exec().then(function (total) {
 
 								self.setupData(properties);
 								return resolve(self);
-							}).exec()["catch"](reject);
+							})["catch"](reject);
 						});
 					});
 				});

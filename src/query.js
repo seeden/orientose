@@ -326,6 +326,7 @@ export default class Query {
 			callback = options;
 			options = {};
 		}
+		options = options || {};
 
 		if(typeof conditions === 'undefined' || typeof doc === 'undefined') {
 			throw new Error('One of parameters is missing');
