@@ -59,54 +59,68 @@ var Data = (function () {
 		},
 		toJSON: {
 			value: function toJSON(options) {
+				var _this = this;
+
 				var json = {};
 
 				options = options || {};
 
-				for (var propName in this._data) {
-					var prop = this._data[propName];
+				Object.keys(this._data).forEach(function (propName) {
+					var prop = _this._data[propName];
 
 					if (prop instanceof VirtualType && !options.virtuals) {
-						continue;
+						return;
 					}
 
 					if (options.metadata === false && prop.isMetadata) {
-						continue;
+						return;
 					}
 
 					if (options.modified && !prop.isModified && !prop.hasDefault) {
-						continue;
+						return;
 					}
 
-					json[propName] = prop.toJSON(options);
-				}
+					var value = prop.toJSON(options);
+					if (typeof value === "undefined") {
+						return;
+					}
+
+					json[propName] = value;
+				});
 
 				return json;
 			}
 		},
 		toObject: {
 			value: function toObject(options) {
+				var _this = this;
+
 				var json = {};
 
 				options = options || {};
 
-				for (var propName in this._data) {
-					var prop = this._data[propName];
+				Object.keys(this._data).forEach(function (propName) {
+					var prop = _this._data[propName];
 
 					if (prop instanceof VirtualType) {
-						continue;
+						return;
 					}
 
 					if (prop.isMetadata && !options.query) {
-						continue;
+						return;
 					}
 
 					if (options.modified && !prop.isModified && !prop.hasDefault) {
-						continue;
+						return;
 					}
 
-					json[propName] = prop.toObject(options);
-				}
+					var value = prop.toObject(options);
+					if (typeof value === "undefined") {
+						return;
+					}
+
+					json[propName] = value;
+				});
 
 				return json;
 			}

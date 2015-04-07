@@ -10,11 +10,15 @@ export default class DateType extends Type {
 	}
 
 	toJSON(options) {
+		return this.toObject();
+	}
+
+	toObject(options) {
 		var value = this.value;
 		return (value && value.getTime) 
 			? value.getTime()
 			: value.value;
-	}
+	}	
 
 	static toString() {
 		return 'Date';

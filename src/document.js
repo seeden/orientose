@@ -2,10 +2,13 @@ import { EventEmitter } from 'events';
 
 export default class Document extends EventEmitter {
 	constructor(model, properties, options) {
+		super();
+		
 		properties = properties || {};
 
 		this._model = model;
 		this._data  = new model.schema.DataClass(properties, model.name); 
+		this._options = options || {};
 
 		this._from = null;
 		this._to = null;
@@ -58,6 +61,10 @@ export default class Document extends EventEmitter {
 		return this._data.toObject(options);
 	}
 
+	forEach(returnType, fn) {
+		return this._data.forEach(returnType, fn);
+	}
+
 	save(callback) {
 		var hooks = this._model.schema.hooks;
 		hooks.execPre('validate', this, error => {
@@ -73,12 +80,16 @@ export default class Document extends EventEmitter {
 				var properties = this.toObject({
 					virtuals: false,
 					metadata: false,
-					modified: true,
+					modified: !this.isNew,
 					query   : true
 				});
 
 				if(this.isNew) {
-					this._model.create(properties).from(this._from).to(this._to).exec((error, user) => {
+					this._model.create(properties)
+						.from(this._from)
+						.to(this._to)
+						.return(this._options.return)
+						.exec((error, user) => {
 						if(error) {
 							return callback(error);
 						}
@@ -93,7 +104,7 @@ export default class Document extends EventEmitter {
 					return;
 				} 
 
-				this._model.update(this, properties, (err, total) => {
+				this._model.update(this, properties).exec((err, total) => {
 					if(err) {
 						return callback(err);
 					}
@@ -127,27 +138,32 @@ export default class Document extends EventEmitter {
 	}
 
 	static findOne(conditions, callback) {
-		return this._model
+		return this.currentModel
 			.findOne(conditions, callback);
 	}
 
 	static find(conditions, callback) {
-		return this._model
+		return this.currentModel
 			.find(conditions, callback);
 	}
 
-	static create(properties, callback) {
-		return new this(properties)
+	static create(properties, options, callback) {
+		if(typeof options === 'function') {
+			callback = options;
+			options = {};
+		}
+
+		return new this(properties, options)
 			.save(callback);
 	}
 
 	static update(conditions, doc, options, callback) {
-		return this._model
+		return this.currentModel
 			.update(conditions, doc, options, callback);
 	}
 
 	static remove(conditions, callback) {
-		return this._model
+		return this.currentModel
 			.remove(conditions, callback);
 	}
 
@@ -157,17 +173,24 @@ export default class Document extends EventEmitter {
 				super(model, properties);
 			}
 
+			/**
+			Frized api mongoose
+			*/
 			static model(modelName) {
 				return model.model(modelName);
 			}
 
-			static get _model() {
-				return model;
-			}
-
+			/**
+			Frized api mongoose
+			*/
 			static get modelName() {
 				return model.name;
 			}
+
+			static get currentModel() {
+				return model;
+			}
+
 		};
 
 		var schema = model.schema;

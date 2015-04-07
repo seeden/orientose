@@ -1,8 +1,8 @@
 "use strict";
 
-var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
@@ -14,10 +14,13 @@ var Document = (function (_EventEmitter) {
 	function Document(model, properties, options) {
 		_classCallCheck(this, Document);
 
+		_get(Object.getPrototypeOf(Document.prototype), "constructor", this).call(this);
+
 		properties = properties || {};
 
 		this._model = model;
 		this._data = new model.schema.DataClass(properties, model.name);
+		this._options = options || {};
 
 		this._from = null;
 		this._to = null;
@@ -83,6 +86,11 @@ var Document = (function (_EventEmitter) {
 				return this._data.toObject(options);
 			}
 		},
+		forEach: {
+			value: function forEach(returnType, fn) {
+				return this._data.forEach(returnType, fn);
+			}
+		},
 		save: {
 			value: function save(callback) {
 				var _this = this;
@@ -101,12 +109,12 @@ var Document = (function (_EventEmitter) {
 						var properties = _this.toObject({
 							virtuals: false,
 							metadata: false,
-							modified: true,
+							modified: !_this.isNew,
 							query: true
 						});
 
 						if (_this.isNew) {
-							_this._model.create(properties).from(_this._from).to(_this._to).exec(function (error, user) {
+							_this._model.create(properties).from(_this._from).to(_this._to)["return"](_this._options["return"]).exec(function (error, user) {
 								if (error) {
 									return callback(error);
 								}
@@ -121,7 +129,7 @@ var Document = (function (_EventEmitter) {
 							return;
 						}
 
-						_this._model.update(_this, properties, function (err, total) {
+						_this._model.update(_this, properties).exec(function (err, total) {
 							if (err) {
 								return callback(err);
 							}
@@ -161,27 +169,32 @@ var Document = (function (_EventEmitter) {
 		},
 		findOne: {
 			value: function findOne(conditions, callback) {
-				return this._model.findOne(conditions, callback);
+				return this.currentModel.findOne(conditions, callback);
 			}
 		},
 		find: {
 			value: function find(conditions, callback) {
-				return this._model.find(conditions, callback);
+				return this.currentModel.find(conditions, callback);
 			}
 		},
 		create: {
-			value: function create(properties, callback) {
-				return new this(properties).save(callback);
+			value: function create(properties, options, callback) {
+				if (typeof options === "function") {
+					callback = options;
+					options = {};
+				}
+
+				return new this(properties, options).save(callback);
 			}
 		},
 		update: {
 			value: function update(conditions, doc, options, callback) {
-				return this._model.update(conditions, doc, options, callback);
+				return this.currentModel.update(conditions, doc, options, callback);
 			}
 		},
 		remove: {
 			value: function remove(conditions, callback) {
-				return this._model.remove(conditions, callback);
+				return this.currentModel.remove(conditions, callback);
 			}
 		},
 		createClass: {
@@ -197,6 +210,11 @@ var Document = (function (_EventEmitter) {
 
 					_createClass(DocumentModel, null, {
 						model: {
+
+							/**
+       Frized api mongoose
+       */
+
 							value: (function (_model) {
 								var _modelWrapper = function model(_x) {
 									return _model.apply(this, arguments);
@@ -211,14 +229,19 @@ var Document = (function (_EventEmitter) {
 								return model.model(modelName);
 							})
 						},
-						_model: {
-							get: function () {
-								return model;
-							}
-						},
 						modelName: {
+
+							/**
+       Frized api mongoose
+       */
+
 							get: function () {
 								return model.name;
+							}
+						},
+						currentModel: {
+							get: function () {
+								return model;
 							}
 						}
 					});

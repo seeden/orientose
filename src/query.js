@@ -33,20 +33,23 @@ export default class Query {
 
 		this._paramIndex = 1;
 
-		this._model = model;
-		this._target = model.name;
+		this._model     = model;
+		this._target    = model.name;
 
-		this._first    = false;
-		this._scalar = false;
+		this._first     = false;
+		this._scalar    = false;
 
-		this._limit  = null;
-		this._skip   = null;
-		this._sort   = null;
+		this._limit     = null;
+		this._skip      = null;
+		this._sort      = null;
+		this._fetchPlan = null;
+		this._return    = null;
 
-		this._from   = null;
-		this._to     = null;
+		this._from      = null;
+		this._to        = null;
 
 		this._operation = null;
+
 
 		this._params = {};
 
@@ -273,7 +276,17 @@ export default class Query {
 	to(value) {
 		this._to = value;
 		return this;
-	}		
+	}	
+
+	fetchPlan(value) {
+		this._fetchPlan = value;
+		return this;
+	}
+
+	return(value) {
+		this._return = value;
+		return this;
+	}	
 
 	sort(sort) {
 		if(typeof sort === 'string') {
@@ -430,6 +443,14 @@ export default class Query {
 
 		if(this._skip) {
 			query = query.skip(this._skip);
+		}
+
+		if(this._fetchPlan) {
+			query = query.fetch(this._fetchPlan);
+		}	
+
+		if(this._return) {
+			query = query.fetch(this._return);
 		}		
 
 		if(this._sort) {

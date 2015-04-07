@@ -4,11 +4,13 @@ var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["defau
 
 var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
+var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+
 var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var EventEmitter = require("events").EventEmitter;
+var ModelBase = _interopRequire(require("./modelbase"));
 
 var Schema = _interopRequire(require("./schemas/index"));
 
@@ -19,8 +21,6 @@ var _async = require("async");
 var waterfall = _async.waterfall;
 var each = _async.each;
 var serial = _async.serial;
-
-var convertType = _interopRequire(require("./types/convert"));
 
 var RidType = _interopRequire(require("./types/rid"));
 
@@ -34,15 +34,11 @@ var Query = _interopRequire(require("./query"));
 
 var log = debug("orientose:model");
 
-var Model = (function (_EventEmitter) {
+var Model = (function (_ModelBase) {
 	function Model(name, schema, connection, options, callback) {
 		var _this = this;
 
 		_classCallCheck(this, Model);
-
-		if (!name) {
-			throw new Error("Model name is not defined");
-		}
 
 		if (!schema instanceof Schema) {
 			throw new Error("This is not a schema");
@@ -57,15 +53,17 @@ var Model = (function (_EventEmitter) {
 			options = {};
 		}
 
+		options = options || {};
+
 		options.dropUnusedProperties = options.dropUnusedProperties || false;
 		options.dropUnusedIndexes = options.dropUnusedIndexes || false;
 
+		_get(Object.getPrototypeOf(Model.prototype), "constructor", this).call(this, name, options);
+
 		callback = callback || function () {};
 
-		this._name = name;
 		this._schema = schema;
 		this._connection = connection;
-		this._options = options || {};
 
 		this._documentClass = Document.createClass(this);
 
@@ -80,17 +78,12 @@ var Model = (function (_EventEmitter) {
 		}
 	}
 
-	_inherits(Model, _EventEmitter);
+	_inherits(Model, _ModelBase);
 
 	_createClass(Model, {
 		DocumentClass: {
 			get: function () {
 				return this._documentClass;
-			}
-		},
-		name: {
-			get: function () {
-				return this._name;
 			}
 		},
 		schema: {
@@ -106,11 +99,6 @@ var Model = (function (_EventEmitter) {
 		db: {
 			get: function () {
 				return this.connection.db;
-			}
-		},
-		options: {
-			get: function () {
-				return this._options;
 			}
 		},
 		model: {
@@ -307,6 +295,10 @@ var Model = (function (_EventEmitter) {
 								}
 							}
 
+							if (schemaProp.options.type.currentModel) {
+								return callback(null, schemaProp.options.type.currentModel);
+							}
+
 							callback(null, null);
 						}, function (model, callback) {
 							var options = schemaProp.options;
@@ -326,11 +318,11 @@ var Model = (function (_EventEmitter) {
 							extend(config, additionalConfig);
 
 							if (model) {
-								if (config.linkedType) {
-									delete config.linkedType;
-								}
-
 								config.linkedClass = model.name;
+							}
+
+							if (config.linkedType && config.linkedClass) {
+								delete config.linkedType;
 							}
 
 							OClass.property.create(config).then(function (oProperty) {
@@ -399,6 +391,6 @@ var Model = (function (_EventEmitter) {
 	});
 
 	return Model;
-})(EventEmitter);
+})(ModelBase);
 
 module.exports = Model;

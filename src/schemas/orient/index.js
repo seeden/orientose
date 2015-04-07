@@ -21,7 +21,7 @@ export function prepareSchema(schema) {
 	schema.virtual('_id', { metadata: true }).get(function() {
 		return this.get('@rid');
 	});	
-}
+};
 
 export default class OrientSchema extends Schema {
 	constructor(props, options) {
@@ -33,4 +33,4 @@ export default class OrientSchema extends Schema {
 	getSubdocumentSchemaConstructor() {
 		return OrientSchema;
 	}
-}
+};

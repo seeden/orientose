@@ -10,4 +10,8 @@ export default class V extends VertexSchema {
 
 		prepareSchema(this);
 	}
+
+	getSubdocumentSchemaConstructor() {
+		return OrientSchema;
+	}
 }

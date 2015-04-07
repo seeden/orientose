@@ -12,7 +12,7 @@ var _inherits = function (subClass, superClass) { if (typeof superClass !== "fun
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var EventEmitter = require("events").EventEmitter;
+var SchemaBase = _interopRequire(require("./schemabase"));
 
 var Kareem = _interopRequire(require("kareem"));
 
@@ -32,19 +32,14 @@ var debug = _interopRequire(require("debug"));
 
 var log = debug("orientose:schema");
 
-var Schema = (function (_EventEmitter) {
+var Schema = (function (_SchemaBase) {
 	function Schema(props, options) {
 		_classCallCheck(this, Schema);
 
-		_get(Object.getPrototypeOf(Schema.prototype), "constructor", this).call(this);
-
-		props = props || {};
+		_get(Object.getPrototypeOf(Schema.prototype), "constructor", this).call(this, options);
 
 		this.methods = {};
 		this.statics = {};
-
-		this._props = {};
-		this._options = options || {};
 
 		this._paths = {};
 		this._indexes = {};
@@ -56,7 +51,7 @@ var Schema = (function (_EventEmitter) {
 		this.add(props);
 	}
 
-	_inherits(Schema, _EventEmitter);
+	_inherits(Schema, _SchemaBase);
 
 	_createClass(Schema, {
 		extendClassName: {
@@ -67,11 +62,6 @@ var Schema = (function (_EventEmitter) {
 		hooks: {
 			get: function () {
 				return this._hooks;
-			}
-		},
-		options: {
-			get: function () {
-				return this._options;
 			}
 		},
 		DataClass: {
@@ -85,6 +75,8 @@ var Schema = (function (_EventEmitter) {
 		add: {
 			value: function add(props) {
 				var _this = this;
+
+				props = props || {};
 
 				if (!_.isObject(props)) {
 					throw new Error("Props is not an object");
@@ -199,11 +191,11 @@ var Schema = (function (_EventEmitter) {
 					return prop;
 				}
 
-				if (prop.type.isSchema) {
+				if (prop.type instanceof Schema) {
 					return prop.type.getPath(subPath);
 				}
 
-				if (!stopOnArray && prop.item && prop.item.type.isSchema) {
+				if (!stopOnArray && prop.item && prop.item.type instanceof Schema) {
 					return prop.item.type.getPath(subPath);
 				}
 			}
@@ -220,7 +212,7 @@ var Schema = (function (_EventEmitter) {
 				var pos = path.indexOf(".");
 				if (pos === -1) {
 					try {
-						var normalizedOptions = this.normalizeOptions(options);
+						var normalizedOptions = this.normalizeOptions(options, path);
 					} catch (e) {
 						log("Problem with path: " + path);
 						throw e;
@@ -250,7 +242,7 @@ var Schema = (function (_EventEmitter) {
 				var propName = path.substr(0, pos);
 
 				var prop = this._props[propName];
-				if (prop && prop.type.isSchema) {
+				if (prop && prop.type instanceof Schema) {
 					prop.type.setPath(subPath, options);
 				}
 
@@ -320,7 +312,7 @@ var Schema = (function (_EventEmitter) {
 
 					var type = prop.item ? prop.item.type : prop.type;
 
-					if (!type || !type.isSchema) {
+					if (!type || !(type instanceof Schema)) {
 						throw new Error("Field does not exists " + subPaths.join("."));
 					}
 
@@ -380,11 +372,6 @@ var Schema = (function (_EventEmitter) {
 				return this;
 			}
 		},
-		isSchema: {
-			get: function () {
-				return true;
-			}
-		},
 		path: {
 			value: (function (_path) {
 				var _pathWrapper = function path(_x3, _x4) {
@@ -424,15 +411,15 @@ var Schema = (function (_EventEmitter) {
 					var path = parentPath ? parentPath + "." + name : name;
 
 					var canTraverseChildren = fn(name, prop, path, false);
-					if (canTraverseChildren === false) {
+					if (canTraverseChildren === false || !traverseChildren) {
 						return;
 					}
 
-					if (prop.type.isSchema) {
+					if (prop.type instanceof Schema) {
 						prop.type.traverse(fn, traverseChildren, path);
 					}
 
-					if (prop.item && prop.item.type.isSchema) {
+					if (prop.item && prop.item.type instanceof Schema) {
 						prop.item.type.traverse(fn, traverseChildren, path);
 					}
 				});
@@ -465,11 +452,11 @@ var Schema = (function (_EventEmitter) {
 					if (prop.item) {
 						return false;
 					}
-				});
+				}, true);
 			}
 		},
 		normalizeOptions: {
-			value: function normalizeOptions(options) {
+			value: function normalizeOptions(options, path) {
 				if (!options) {
 					return null;
 				}
@@ -503,7 +490,8 @@ var Schema = (function (_EventEmitter) {
 					};
 				}
 
-				var type = options.isSchema ? options : options.type;
+				var type = options instanceof Schema ? options : options.type;
+
 				var SubSchema = this.getSubdocumentSchemaConstructor();
 
 				//create schema from plain object
@@ -514,7 +502,7 @@ var Schema = (function (_EventEmitter) {
 				var normalised = {
 					schema: this,
 					type: type,
-					schemaType: convertType(type),
+					schemaType: convertType(type, Schema),
 					options: options
 				};
 
@@ -531,7 +519,7 @@ var Schema = (function (_EventEmitter) {
 			value: function toMongoose(prop, path) {
 				var options = prop.options || {};
 
-				if (prop.type.isSchema) {
+				if (prop.type instanceof Schema) {
 					return;
 				}
 
@@ -545,7 +533,7 @@ var Schema = (function (_EventEmitter) {
 				};
 
 				if (prop.item) {
-					if (prop.item.type.isSchema) {
+					if (prop.item.type instanceof Schema) {
 						config.schema = prop.item.type;
 					}
 				}
@@ -556,6 +544,6 @@ var Schema = (function (_EventEmitter) {
 	});
 
 	return Schema;
-})(EventEmitter);
+})(SchemaBase);
 
 module.exports = Schema;

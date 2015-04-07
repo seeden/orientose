@@ -1,8 +1,7 @@
-import { EventEmitter } from 'events';
+import ModelBase from './modelbase';
 import Schema from './schemas/index';
 import Document from './document';
 import { waterfall, each, serial } from 'async';
-import convertType from './types/convert';
 import RidType from './types/rid';
 import extend from 'node.extend';
 import debug from 'debug';
@@ -11,12 +10,8 @@ import Query from './query';
 
 const log = debug('orientose:model');
 
-export default class Model extends EventEmitter {
+export default class Model extends ModelBase {
 	constructor (name, schema, connection, options, callback) {
-		if(!name) {
-			throw new Error('Model name is not defined');
-		}
-
 		if(!schema instanceof Schema) {
 			throw new Error('This is not a schema');
 		}
@@ -30,15 +25,17 @@ export default class Model extends EventEmitter {
 			options = {};
 		}
 
+		options = options || {};
+
 		options.dropUnusedProperties = options.dropUnusedProperties || false;
 		options.dropUnusedIndexes = options.dropUnusedIndexes || false;
 
+		super(name, options);
+
 		callback = callback || function() {};
 
-		this._name = name;
 		this._schema = schema;
 		this._connection = connection;
-		this._options = options || {};
 
 		this._documentClass = Document.createClass(this);
 
@@ -57,10 +54,6 @@ export default class Model extends EventEmitter {
 		return this._documentClass;
 	}
 
-	get name() {
-		return this._name;
-	}
-
 	get schema() {
 		return this._schema;
 	}
@@ -71,10 +64,6 @@ export default class Model extends EventEmitter {
 
 	get db() {
 		return this.connection.db;
-	}
-
-	get options() {
-		return this._options;
 	}
 
 	model(name) {
@@ -266,6 +255,10 @@ export default class Model extends EventEmitter {
 								}
 							}
 
+							if(schemaProp.options.type.currentModel) {
+								return callback(null, schemaProp.options.type.currentModel);
+							}
+
 							callback(null, null);
 						}, function(model, callback) {
 							var options = schemaProp.options;
@@ -285,11 +278,11 @@ export default class Model extends EventEmitter {
 							extend(config, additionalConfig);
 
 							if(model) {
-								if(config.linkedType) {
-									delete config.linkedType;
-								}
-
 								config.linkedClass = model.name;
+							}
+
+							if(config.linkedType && config.linkedClass) {
+								delete config.linkedType;
 							}
 
 							OClass.property.create(config).then(function(oProperty) {

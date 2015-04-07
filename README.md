@@ -216,28 +216,6 @@ User.find({
 });	
 ```
 
-#### Model.findByRid (alias Model.findById)
-Finds a single document by rid.
-
-```js
-User.findByRid(rid, function(err, user) {
-	user.name = 'Luca';
-
-	user.save(function(err, affectedRows) {
-		affectedRows.should.equal(1);
-	});
-});
-```
-
-#### Model.removeByRid
-Remove a single document by a documents rid.
-
-```js
-User.removeByRid(rid, function(err, affectedRows) {
-	affectedRows.should.equal(1);
-});	
-```
-
 #### Schema.add
 Adds key path / schema type pairs to this schema.
 

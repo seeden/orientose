@@ -41,6 +41,8 @@ function prepareSchema(schema) {
 	});
 }
 
+;
+
 var OrientSchema = (function (_Schema) {
 	function OrientSchema(props, options) {
 		_classCallCheck(this, OrientSchema);

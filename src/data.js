@@ -41,23 +41,28 @@ export default class Data {
 
 		options = options || {};
 
-		for(var propName in this._data) {
+		Object.keys(this._data).forEach(propName => {
 			var prop = this._data[propName];
 
 			if(prop instanceof VirtualType && !options.virtuals) {
-				continue;
+				return;
 			}
 
 			if(options.metadata === false && prop.isMetadata) {
-				continue;
+				return;
 			}
 
 			if(options.modified && !prop.isModified && !prop.hasDefault) {
-				continue;
+				return;
 			}
 
-			json[propName] = prop.toJSON(options);
-		}
+			var value = prop.toJSON(options);
+			if(typeof value === 'undefined') {
+				return;
+			}
+
+			json[propName] = value;
+		});
 
 		return json;
 	}
@@ -67,23 +72,28 @@ export default class Data {
 
 		options = options || {};
 
-		for(var propName in this._data) {
+		Object.keys(this._data).forEach(propName => {
 			var prop = this._data[propName];
 
 			if(prop instanceof VirtualType) {
-				continue;
+				return;
 			}
 
 			if(prop.isMetadata && !options.query) {
-				continue;
+				return;
 			}
 
 			if(options.modified && !prop.isModified && !prop.hasDefault) {
-				continue;
+				return;
 			}
 
-			json[propName] = prop.toObject(options);
-		}
+			var value = prop.toObject(options);
+			if(typeof value === 'undefined') {
+				return;
+			}
+
+			json[propName] = value;
+		});
 
 		return json;
 	}

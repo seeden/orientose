@@ -60,6 +60,8 @@ var Query = (function () {
 		this._limit = null;
 		this._skip = null;
 		this._sort = null;
+		this._fetchPlan = null;
+		this._return = null;
 
 		this._from = null;
 		this._to = null;
@@ -353,6 +355,18 @@ var Query = (function () {
 				return this;
 			}
 		},
+		fetchPlan: {
+			value: function fetchPlan(value) {
+				this._fetchPlan = value;
+				return this;
+			}
+		},
+		"return": {
+			value: function _return(value) {
+				this._return = value;
+				return this;
+			}
+		},
 		sort: {
 			value: (function (_sort) {
 				var _sortWrapper = function sort(_x7) {
@@ -516,6 +530,14 @@ var Query = (function () {
 
 				if (this._skip) {
 					query = query.skip(this._skip);
+				}
+
+				if (this._fetchPlan) {
+					query = query.fetch(this._fetchPlan);
+				}
+
+				if (this._return) {
+					query = query.fetch(this._return);
 				}
 
 				if (this._sort) {

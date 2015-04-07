@@ -8,6 +8,8 @@ import SchemaE from './schemas/orient/e';
 
 export default class Connection extends EventEmitter {
 	constructor (options, dbOptions) {
+		super();
+
 		options = options || {};
 		dbOptions = dbOptions || {};
 
@@ -21,7 +23,7 @@ export default class Connection extends EventEmitter {
 		this._options = options;
 		this._dbOptions = dbOptions;
 
-		this._models = {};
+		this._models = new Map();
 
 		this._server = Oriento(options);
 		this._db = this._server.use(dbOptions);
@@ -56,33 +58,33 @@ export default class Connection extends EventEmitter {
 		callback = callback || function(){};
 
 		if(typeof schema === 'undefined') {
-			if(!this._models[name]) {
-				throw new Error('Model does not exists');
+			if(!this._models.has(name)) {
+				throw new Error(`Model ${name} does not exists`);
 			}
 
-			return this._models[name].DocumentClass;
+			return this._models.get(name).DocumentClass;
 		}
 
-		if(this._models[name]) {
+		if(this._models.has(name)) {
 			throw new Error('Model already exists');
 		}
 
-		this._models[name] = new Model(name, schema, this, options, function(err, model) {
+		this._models.set(name, new Model(name, schema, this, options, function(err, model) {
 			if(err) {
 				return callback(err);
 			}
 
 			callback(null, model.DocumentClass);
-		});
+		}));
 
-		return this._models[name].DocumentClass;
+		return this._models.get(name).DocumentClass;
 	}
 
 	/*
 	Returns an array of model names created on this connection.
 	*/
 	modelNames() {
-		return Object.keys(this._models);
+		return this._models.keys();
 	}
 
 	get readyState() {

@@ -26,4 +26,8 @@ export default class E extends EdgeSchema {
 			}, { unique: true });
 		}
 	}
+
+	getSubdocumentSchemaConstructor() {
+		return OrientSchema;
+	}
 }

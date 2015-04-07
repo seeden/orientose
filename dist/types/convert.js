@@ -14,17 +14,27 @@ var DateType = _interopRequire(require("./date"));
 
 var ObjectType = _interopRequire(require("./object"));
 
+var LinkedType = _interopRequire(require("./linked"));
+
 var ArrayType = _interopRequire(require("./array"));
 
+var ModelBase = _interopRequire(require("../modelbase"));
+
+var SchemaBase = _interopRequire(require("../schemas/schemabase"));
+
 var _ = _interopRequire(require("lodash"));
+
+var Document = _interopRequire(require("../document"));
 
 module.exports = function (type) {
 	if (!type) {
 		throw new Error("Type is not defined");
 	} else if (type.isSchemaType) {
 		return type;
-	} else if (type.isSchema) {
+	} else if (type instanceof SchemaBase) {
 		return ObjectType;
+	} else if (type.prototype && type.prototype.constructor && type.prototype.constructor.__proto__ === Document) {
+		return LinkedType;
 	} else if (_.isArray(type)) {
 		return ArrayType;
 	} else if (type === String) {
@@ -36,6 +46,8 @@ module.exports = function (type) {
 	} else if (type === Date) {
 		return DateType;
 	}
+
+	console.log(type.prototype.constructor.__proto__ === Document);
 
 	throw new Error("Unrecognized type");
 };
