@@ -2,7 +2,7 @@ import Type from './type';
 
 export default class DateType extends Type {
 	_serialize(value) {
-        return Math.floor(((new Date(value))-0)/100);
+        return Math.floor(((new Date(value))-0));
 	}
 
 	_deserialize(value) {

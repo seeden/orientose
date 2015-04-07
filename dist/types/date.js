@@ -24,7 +24,7 @@ var DateType = (function (_Type) {
 	_createClass(DateType, {
 		_serialize: {
 			value: function _serialize(value) {
-				return Math.floor((new Date(value) - 0) / 100);
+				return Math.floor(new Date(value) - 0);
 			}
 		},
 		_deserialize: {
