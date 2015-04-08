@@ -2,6 +2,7 @@
 
 module.exports = {
 	$in: "IN",
+	"in": "IN",
 	$nin: "NOT IN",
 	$lt: "<",
 	$lte: "<=",

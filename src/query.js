@@ -7,6 +7,7 @@ import EdgeSchema from './schemas/edge';
 import { RecordID } from 'oriento';
 import LogicOperators from './constants/logicoperators';
 import ComparisonOperators from './constants/comparisonoperators';
+import extend from "node.extend";
 import Promise from 'bluebird';
 
 const log = debug('orientose:query');
@@ -46,7 +47,9 @@ export default class Query {
 
 		this._from   = null;
 		this._to     = null;
+		this._let 	 = {};
 
+		this._selects = [];
 		
 		this._operation = null;
 
@@ -72,6 +75,11 @@ export default class Query {
 		return this.model.schema;
 	}
 
+	select(key) {
+		this._selects.push(key);
+		return this;
+	}
+
 	paramify (key) {
   		return key.replace(/([^A-Za-z0-9])/g, '');
 	}
@@ -90,8 +98,14 @@ export default class Query {
 	}
 
 	createComparisonQuery(propertyName, operator, value) {
-		var paramName = this.nextParamName(propertyName);
-
+		var param;
+		if ( true === value.__orientose_raw__ ) {
+			param = value;
+		} else {
+			var paramName = this.nextParamName(propertyName);
+			param = ":"+paramName;
+			this.addParam(paramName, value);
+		}
 		if(value === null) {
 			if(operator === '=') {
 				return propertyName + ' IS NULL';
@@ -100,8 +114,8 @@ export default class Query {
 			}
 		}
 
-		this.addParam(paramName, value);
-		return propertyName + ' ' + operator + ' :' + paramName;		
+		
+		return propertyName + ' ' + operator + ' ' + param;		
 	}
 
 	queryLanguage(conditions) {
@@ -230,7 +244,12 @@ export default class Query {
 			self = self.operator(Operator.AND, condition);
 		});
 		return self;
-	}	
+	}
+
+	let(name, statement) {
+		this._let[name] = statement;
+		return this;
+	}
 
 	where(conditions, callback) {
 		conditions = conditions || {};
@@ -397,6 +416,10 @@ export default class Query {
 			console.log('AT LEAST WE REACHED HERE?!?!?');
 
 		var isGraph = schema instanceof GraphSchema;
+		var selects;
+		if ( this._selects.length > 0 ) {
+			selects = this._selects.join(",");
+		}
 		if(isGraph) {
 			var graphType = schema instanceof EdgeSchema ? 'EDGE' : 'VERTEX';
 
@@ -405,7 +428,7 @@ export default class Query {
 			} else if(operation === Operation.DELETE) {
 				query = query.delete(graphType, target);
 			} else if(operation === Operation.SELECT) {
-				query = query.select().from(target);
+				query = query.select(selects).from(target);
 			} else {
 				query = query.update(target);
 			}
@@ -415,7 +438,7 @@ export default class Query {
 			} else if(operation === Operation.DELETE) {
 				query = query.delete().from(target);
 			} else if(operation === Operation.SELECT) {
-				query = query.select().from(target);
+				query = query.select(selects).from(target);
 			} else {
 				query = query.update(target);
 			}			
@@ -436,6 +459,10 @@ export default class Query {
 		this._operators.forEach(function(operator) {
 			query = query[operator.type](operator.query);
 		});
+
+		for ( var name in this._let ) {
+			query = query.let(name, this._let[name]);
+		}
 
 		query.addParams(this._params);
 

@@ -343,6 +343,10 @@ export default class Model extends EventEmitter {
 		return new Query(this, options);
 	}
 
+	let(name, statement) {
+		return this.createQuery({}).let(name, statement);
+	}
+
 	where(conditions) {
 		return this.createQuery({}).where(conditions);
 	}

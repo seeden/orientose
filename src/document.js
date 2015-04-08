@@ -132,6 +132,10 @@ export default class Document extends EventEmitter {
 		});
 	}
 
+	static let(name, statement) {
+		return this._model.let(name, statement);
+	}
+
 	static exec(){
 		return this._model.exec();
 	}

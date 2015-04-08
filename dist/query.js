@@ -24,6 +24,8 @@ var LogicOperators = _interopRequire(require("./constants/logicoperators"));
 
 var ComparisonOperators = _interopRequire(require("./constants/comparisonoperators"));
 
+var extend = _interopRequire(require("node.extend"));
+
 var Promise = _interopRequire(require("bluebird"));
 
 var log = debug("orientose:query");
@@ -65,6 +67,9 @@ var Query = (function () {
 
 		this._from = null;
 		this._to = null;
+		this._let = {};
+
+		this._selects = [];
 
 		this._operation = null;
 
@@ -93,6 +98,12 @@ var Query = (function () {
 				return this.model.schema;
 			}
 		},
+		select: {
+			value: function select(key) {
+				this._selects.push(key);
+				return this;
+			}
+		},
 		paramify: {
 			value: function paramify(key) {
 				return key.replace(/([^A-Za-z0-9])/g, "");
@@ -116,8 +127,14 @@ var Query = (function () {
 		},
 		createComparisonQuery: {
 			value: function createComparisonQuery(propertyName, operator, value) {
-				var paramName = this.nextParamName(propertyName);
-
+				var param;
+				if (true === value.__orientose_raw__) {
+					param = value;
+				} else {
+					var paramName = this.nextParamName(propertyName);
+					param = ":" + paramName;
+					this.addParam(paramName, value);
+				}
 				if (value === null) {
 					if (operator === "=") {
 						return propertyName + " IS NULL";
@@ -126,8 +143,7 @@ var Query = (function () {
 					}
 				}
 
-				this.addParam(paramName, value);
-				return propertyName + " " + operator + " :" + paramName;
+				return propertyName + " " + operator + " " + param;
 			}
 		},
 		queryLanguage: {
@@ -271,6 +287,12 @@ var Query = (function () {
 					self = self.operator(Operator.AND, condition);
 				});
 				return self;
+			}
+		},
+		"let": {
+			value: function _let(name, statement) {
+				this._let[name] = statement;
+				return this;
 			}
 		},
 		where: {
@@ -496,6 +518,10 @@ var Query = (function () {
 				console.log("AT LEAST WE REACHED HERE?!?!?");
 
 				var isGraph = schema instanceof GraphSchema;
+				var selects;
+				if (this._selects.length > 0) {
+					selects = this._selects.join(",");
+				}
 				if (isGraph) {
 					var graphType = schema instanceof EdgeSchema ? "EDGE" : "VERTEX";
 
@@ -504,7 +530,7 @@ var Query = (function () {
 					} else if (operation === Operation.DELETE) {
 						query = query["delete"](graphType, target);
 					} else if (operation === Operation.SELECT) {
-						query = query.select().from(target);
+						query = query.select(selects).from(target);
 					} else {
 						query = query.update(target);
 					}
@@ -514,7 +540,7 @@ var Query = (function () {
 					} else if (operation === Operation.DELETE) {
 						query = query["delete"]().from(target);
 					} else if (operation === Operation.SELECT) {
-						query = query.select().from(target);
+						query = query.select(selects).from(target);
 					} else {
 						query = query.update(target);
 					}
@@ -535,6 +561,10 @@ var Query = (function () {
 				this._operators.forEach(function (operator) {
 					query = query[operator.type](operator.query);
 				});
+
+				for (var name in this._let) {
+					query = query["let"](name, this._let[name]);
+				}
 
 				query.addParams(this._params);
 

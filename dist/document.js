@@ -161,6 +161,11 @@ var Document = (function (_EventEmitter) {
 			}
 		}
 	}, {
+		"let": {
+			value: function _let(name, statement) {
+				return this._model["let"](name, statement);
+			}
+		},
 		exec: {
 			value: function exec() {
 				return this._model.exec();

@@ -394,6 +394,11 @@ var Model = (function (_EventEmitter) {
 				return new Query(this, options);
 			}
 		},
+		"let": {
+			value: function _let(name, statement) {
+				return this.createQuery({})["let"](name, statement);
+			}
+		},
 		where: {
 			value: function where(conditions) {
 				return this.createQuery({}).where(conditions);
