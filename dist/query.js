@@ -430,6 +430,8 @@ var Query = (function () {
 					throw new Error("One of parameters is missing");
 				}
 
+				options = options || {};
+
 				return this.operation(Operation.UPDATE).limit(options.multi ? null : 1).set(doc).scalar(true).condExec(conditions, callback);
 			}
 		},

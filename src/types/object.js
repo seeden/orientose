@@ -29,6 +29,10 @@ export default class ObjectType extends Type {
 	}
 
 	set(key, value) {
+		if(!this._value) {
+			this._value = new this._schema.DataClass({}, this._computeClassName(this.data, this.prop), this.mainData);
+		}
+
 		this._value[key] = value;
 	}
 
@@ -44,14 +48,20 @@ export default class ObjectType extends Type {
 	}
 
 	toJSON(options) {
-		return this._value.toJSON(options);
+		var value = this.value;
+		return value ? value.toJSON(options) : value;
 	}
 
 	toObject(options) {
-		return this._value.toObject(options);
+		var value = this.value;
+		return value ? value.toObject(options) : value;
 	}
 
 	get isModified() {
+		if(!this._value) {
+			return this.original !== this.value;
+		}
+
 		var isModified = false;
 
 		this._value.forEach(true, function(prop) {

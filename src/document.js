@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import _ from 'lodash';
 
 export default class Document extends EventEmitter {
 	constructor(model, properties, options) {
@@ -104,6 +105,9 @@ export default class Document extends EventEmitter {
 					return;
 				} 
 
+				properties = this.prepareUpdateProperties(properties);
+				console.log(properties);
+
 				this._model.update(this, properties).exec((err, total) => {
 					if(err) {
 						return callback(err);
@@ -114,6 +118,31 @@ export default class Document extends EventEmitter {
 				});
 			});
 		});
+	}
+
+	prepareUpdateProperties(properties) {
+		var props = {};
+		Object.keys(properties).forEach(propName => {
+			var value = properties[propName];
+			if(propName[0] === '@') {
+				return;
+			}
+
+			if(_.isObject(value) && !_.isArray(value)) {
+				var propsInner = this.prepareUpdateProperties(value);
+				Object.keys(propsInner).forEach(function(propName2) {
+					if(propName2[0] === '@') {
+						return;
+					}
+					props[propName + '.' + propName2] = propsInner[propName2];
+				});
+				return;
+			}
+
+			props[propName] = value;
+		});
+
+		return props;
 	}
 
 	remove(callback) {

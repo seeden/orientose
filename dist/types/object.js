@@ -49,6 +49,10 @@ var ObjectType = (function (_Type) {
 		},
 		set: {
 			value: function set(key, value) {
+				if (!this._value) {
+					this._value = new this._schema.DataClass({}, this._computeClassName(this.data, this.prop), this.mainData);
+				}
+
 				this._value[key] = value;
 			}
 		},
@@ -67,16 +71,22 @@ var ObjectType = (function (_Type) {
 		},
 		toJSON: {
 			value: function toJSON(options) {
-				return this._value.toJSON(options);
+				var value = this.value;
+				return value ? value.toJSON(options) : value;
 			}
 		},
 		toObject: {
 			value: function toObject(options) {
-				return this._value.toObject(options);
+				var value = this.value;
+				return value ? value.toObject(options) : value;
 			}
 		},
 		isModified: {
 			get: function () {
+				if (!this._value) {
+					return this.original !== this.value;
+				}
+
 				var isModified = false;
 
 				this._value.forEach(true, function (prop) {

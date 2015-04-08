@@ -338,6 +338,8 @@ export default class Query {
 			throw new Error('One of parameters is missing');
 		}
 
+		options = options || {};
+
 		return this
 			.operation(Operation.UPDATE)
 			.limit(options.multi ? null : 1)
