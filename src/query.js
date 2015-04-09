@@ -7,6 +7,7 @@ import EdgeSchema from './schemas/edge';
 import { RecordID } from 'oriento';
 import LogicOperators from './constants/logicoperators';
 import ComparisonOperators from './constants/comparisonoperators';
+import extend from 'node.extend';
 
 const log = debug('orientose:query');
 
@@ -325,6 +326,36 @@ export default class Query {
 			.condExec(callback);
 	}
 
+	options(options) {
+		options = options || {};
+
+		if(options.multi) {
+			options.limit = null;
+		}
+
+		if(options.new) {
+			options.return = 'AFTER @this';
+		}		
+
+		if(typeof options.fetchPlan !== 'undefined') {
+			this.fetchPlan(options.fetchPlan);
+		}
+
+		if(typeof options.return !== 'undefined') {
+			this.return(options.return);
+		}		
+
+		if(typeof options.limit !== 'undefined') {
+			this.limit(options.limit);
+		}
+
+		if(typeof options.scalar !== 'undefined') {
+			this.scalar(options.scalar);
+		}		
+
+		return this;
+	}
+
 	/**
 	update(conditions, update, [options], [callback])
 	*/
@@ -338,13 +369,17 @@ export default class Query {
 			throw new Error('One of parameters is missing');
 		}
 
-		options = options || {};
+		const defaultOptions = {
+			scalar: true,
+			limit: 1
+		};
+
+		options = extend({}, defaultOptions, options || {});
 
 		return this
 			.operation(Operation.UPDATE)
-			.limit(options.multi ? null : 1)
+			.options(options)
 			.set(doc)
-			.scalar(true)
 			.condExec(conditions, callback);
 	}	
 
@@ -385,10 +420,13 @@ export default class Query {
 		var query = new OrientoQuery(model.connection.db);
 		var q = query;
 
-		var target = this._target && this._target['@rid'] 
-			? this._target['@rid'] 
-			: this._target;
-
+		var target = this._target;
+		if(target instanceof Document) {
+			target = target.get('@rid');
+			if(!target) {
+				throw new Error('Target is document but his RID is not defined');
+			}
+		}
 
 		var isGraph = schema instanceof GraphSchema;
 		if(isGraph) {
@@ -416,11 +454,25 @@ export default class Query {
 		}	
 
 		if(this._from) {
-			query.from(this._from && this._from['@rid'] ? this._from['@rid'] : this._from);
+			var from = this._from;
+			if(from instanceof Document) {
+				from = from.get('@rid');
+				if(!from) {
+					throw new Error('From is document but his rid is not defined');
+				}
+			}
+			query.from(from);
 		}	
 
 		if(this._to) {
-			query.to(this._to && this._to['@rid'] ? this._to['@rid'] : this._to);
+			var to = this._to;
+			if(to instanceof Document) {
+				to = to.get('@rid');
+				if(!to) {
+					throw new Error('To is document but his rid is not defined');
+				}
+			}
+			query.to(to);
 		}			
 
 		if(this._set) {
@@ -452,7 +504,7 @@ export default class Query {
 		}	
 
 		if(this._return) {
-			query = query.fetch(this._return);
+			query = query.return(this._return);
 		}		
 
 		if(this._sort) {

@@ -96,8 +96,15 @@ var Document = (function (_EventEmitter) {
 			}
 		},
 		save: {
-			value: function save(callback) {
+			value: function save(options, callback) {
 				var _this = this;
+
+				if (typeof options === "function") {
+					callback = options;
+					options = {};
+				}
+
+				options = options || {};
 
 				var hooks = this._model.schema.hooks;
 				hooks.execPre("validate", this, function (error) {
@@ -110,21 +117,21 @@ var Document = (function (_EventEmitter) {
 							return callback(error);
 						}
 
-						var properties = _this.toObject({
-							virtuals: false,
-							metadata: false,
-							modified: !_this.isNew,
-							query: true
-						});
-
 						if (_this.isNew) {
-							_this._model.create(properties).from(_this._from).to(_this._to)["return"](_this._options["return"]).exec(function (error, user) {
+							var properties = _this.toObject({
+								metadata: true,
+								create: true
+							});
+
+							console.log(properties);
+
+							_this._model.create(properties).from(_this._from).to(_this._to).options(options).exec(function (error, user) {
 								if (error) {
 									return callback(error);
 								}
 
 								_this.setupData(user.toJSON({
-									virtuals: false
+									metadata: true
 								}));
 
 								callback(null, _this);
@@ -133,10 +140,17 @@ var Document = (function (_EventEmitter) {
 							return;
 						}
 
-						properties = _this.prepareUpdateProperties(properties);
+						var properties = _this.toObject({
+							metadata: true,
+							modified: true,
+							update: true
+						});
+
 						console.log(properties);
 
-						_this._model.update(_this, properties).exec(function (err, total) {
+						//properties = this.prepareUpdateProperties(properties);
+
+						_this._model.update(_this, properties, options).exec(function (err, total) {
 							if (err) {
 								return callback(err);
 							}
@@ -212,12 +226,19 @@ var Document = (function (_EventEmitter) {
 				return this.currentModel.find(conditions, callback);
 			}
 		},
+		findOneAndUpdate: {
+			value: function findOneAndUpdate(conditions, doc, options, callback) {
+				return this.currentModel.findOneAndUpdate(conditions, doc, options, callback);
+			}
+		},
 		create: {
 			value: function create(properties, options, callback) {
 				if (typeof options === "function") {
 					callback = options;
 					options = {};
 				}
+
+				options = options || {};
 
 				return new this(properties, options).save(callback);
 			}

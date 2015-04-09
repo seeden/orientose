@@ -33,7 +33,6 @@ var RIDType = (function (_Type) {
 		_serialize: {
 			value: function _serialize(value) {
 				var record = new RecordID(value);
-
 				if (!record) {
 					throw new Error("Problem with parsing of RID: " + value);
 				}

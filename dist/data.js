@@ -72,7 +72,7 @@ var Data = (function () {
 						return;
 					}
 
-					if (options.metadata === false && prop.isMetadata) {
+					if (prop.isMetadata && !options.metadata) {
 						return;
 					}
 
@@ -102,11 +102,11 @@ var Data = (function () {
 				Object.keys(this._data).forEach(function (propName) {
 					var prop = _this._data[propName];
 
-					if (prop instanceof VirtualType) {
+					if (prop instanceof VirtualType && !options.virtuals) {
 						return;
 					}
 
-					if (prop.isMetadata && !options.query) {
+					if (prop.isMetadata && !options.metadata) {
 						return;
 					}
 
@@ -185,10 +185,12 @@ var Data = (function () {
 		},
 		set: {
 			value: function set(path, value, setAsOriginal) {
+				var _this = this;
+
 				if (_.isPlainObject(path)) {
-					for (var key in path) {
-						this.set(key, path[key], setAsOriginal);
-					}
+					Object.keys(path).forEach(function (key) {
+						_this.set(key, path[key], setAsOriginal);
+					});
 					return this;
 				}
 
@@ -201,6 +203,7 @@ var Data = (function () {
 					}
 
 					property.value = value;
+
 					if (setAsOriginal) {
 						property.setAsOriginal();
 					}

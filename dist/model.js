@@ -370,6 +370,13 @@ var Model = (function (_ModelBase) {
 		},
 		update: {
 			value: function update(conditions, doc, options, callback) {
+				if (typeof options === "function") {
+					callback = options;
+					options = {};
+				}
+
+				options = options || {};
+
 				return new Query(this, {}).update(conditions, doc, options, callback);
 			}
 		},
@@ -381,6 +388,20 @@ var Model = (function (_ModelBase) {
 		findOne: {
 			value: function findOne(conditions, callback) {
 				return new Query(this, {}).findOne(conditions, callback);
+			}
+		},
+		findOneAndUpdate: {
+			value: function findOneAndUpdate(conditions, doc, options, callback) {
+				if (typeof options === "function") {
+					callback = options;
+					options = {};
+				}
+
+				options = options || {};
+				options.scalar = false;
+				options["new"] = true;
+
+				return new Query(this, {}).update(conditions, doc, options, callback);
 			}
 		},
 		remove: {

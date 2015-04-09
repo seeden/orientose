@@ -47,7 +47,5 @@ module.exports = function (type) {
 		return DateType;
 	}
 
-	console.log(type.prototype.constructor.__proto__ === Document);
-
 	throw new Error("Unrecognized type");
 };

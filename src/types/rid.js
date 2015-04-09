@@ -5,7 +5,6 @@ import orineto, { RecordID } from 'oriento';
 export default class RIDType extends Type {
 	_serialize(value) {
 		var record = new RecordID(value);
-
 		if(!record) {
 			throw new Error('Problem with parsing of RID: ' + value);
 		}

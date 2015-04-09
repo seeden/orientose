@@ -66,7 +66,14 @@ export default class Document extends EventEmitter {
 		return this._data.forEach(returnType, fn);
 	}
 
-	save(callback) {
+	save(options, callback) {
+		if(typeof options === 'function') {
+			callback = options;
+			options = {};
+		}
+
+		options = options || {};
+
 		var hooks = this._model.schema.hooks;
 		hooks.execPre('validate', this, error => {
 			if(error) {
@@ -78,25 +85,25 @@ export default class Document extends EventEmitter {
 					return callback(error);
 				}
 
-				var properties = this.toObject({
-					virtuals: false,
-					metadata: false,
-					modified: !this.isNew,
-					query   : true
-				});
-
 				if(this.isNew) {
+					var properties = this.toObject({
+						metadata: true,
+						create: true
+					});
+
+					console.log(properties);
+
 					this._model.create(properties)
 						.from(this._from)
 						.to(this._to)
-						.return(this._options.return)
+						.options(options)
 						.exec((error, user) => {
 						if(error) {
 							return callback(error);
 						}
 
 						this.setupData(user.toJSON({
-							virtuals: false
+							metadata: true
 						}));
 
 						callback(null, this);
@@ -105,10 +112,17 @@ export default class Document extends EventEmitter {
 					return;
 				} 
 
-				properties = this.prepareUpdateProperties(properties);
+				var properties = this.toObject({
+					metadata: true,
+					modified: true,
+					update: true
+				});
+
 				console.log(properties);
 
-				this._model.update(this, properties).exec((err, total) => {
+				//properties = this.prepareUpdateProperties(properties);
+
+				this._model.update(this, properties, options).exec((err, total) => {
 					if(err) {
 						return callback(err);
 					}
@@ -176,11 +190,18 @@ export default class Document extends EventEmitter {
 			.find(conditions, callback);
 	}
 
+	static findOneAndUpdate(conditions, doc, options, callback) {
+		return this.currentModel
+			.findOneAndUpdate(conditions, doc, options, callback);
+	}
+
 	static create(properties, options, callback) {
 		if(typeof options === 'function') {
 			callback = options;
 			options = {};
 		}
+
+		options = options || {};
 
 		return new this(properties, options)
 			.save(callback);

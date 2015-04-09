@@ -332,6 +332,13 @@ export default class Model extends ModelBase {
 	}
 
 	update (conditions, doc, options, callback) {
+		if(typeof options === 'function') {
+			callback = options;
+			options = {};
+		}
+
+		options = options || {};
+
 		return new Query(this, {})
 			.update(conditions, doc, options, callback);
 	}
@@ -345,6 +352,20 @@ export default class Model extends ModelBase {
 		return new Query(this, {})
 			.findOne(conditions, callback);
 	}	
+
+	findOneAndUpdate(conditions, doc, options, callback) {
+		if(typeof options === 'function') {
+			callback = options;
+			options = {};
+		}
+
+		options = options || {};
+		options.scalar = false;
+		options.new = true;
+
+		return new Query(this, {})
+			.update(conditions, doc, options, callback);
+	}
 
 	remove (conditions, callback) {
 		return new Query(this, {})

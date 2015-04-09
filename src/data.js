@@ -48,7 +48,7 @@ export default class Data {
 				return;
 			}
 
-			if(options.metadata === false && prop.isMetadata) {
+			if(prop.isMetadata && !options.metadata) {
 				return;
 			}
 
@@ -75,11 +75,11 @@ export default class Data {
 		Object.keys(this._data).forEach(propName => {
 			var prop = this._data[propName];
 
-			if(prop instanceof VirtualType) {
+			if(prop instanceof VirtualType && !options.virtuals) {
 				return;
 			}
 
-			if(prop.isMetadata && !options.query) {
+			if(prop.isMetadata && !options.metadata) {
 				return;
 			}
 
@@ -156,9 +156,9 @@ export default class Data {
 
 	set (path, value, setAsOriginal) {
 		if(_.isPlainObject(path)) {
-			for(var key in path) {
+			Object.keys(path).forEach(key => {
 				this.set(key, path[key], setAsOriginal);
-			}
+			});
 			return this;
 		}
 
@@ -170,8 +170,8 @@ export default class Data {
 				return this;
 			}
 			
-
 			property.value = value;
+
 			if(setAsOriginal) {
 				property.setAsOriginal();
 			}

@@ -12,7 +12,6 @@ export default class Type {
 		this._options  = options;
 		this._name     = name;
 
-
 		this._default  = options.default;
 		this._value    = void 0;
 		this._original = void 0;
