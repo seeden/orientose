@@ -491,17 +491,12 @@ var Query = (function () {
 			})
 		},
 		then: {
-			value: function then() {
-				return this.exec("then");
-			}
-		},
-		map: {
-			value: function map() {
-				return this.exec("map");
+			value: function then(fn) {
+				return this.exec(fn);
 			}
 		},
 		exec: {
-			value: function exec(promiseMethod) {
+			value: function exec(fn) {
 				var _this = this;
 
 				var model = this.model;
@@ -617,9 +612,8 @@ var Query = (function () {
 					}
 					return Promise.resolve(results);
 				});
-
-				if (promiseMethod) {
-					return promise[promiseMethod];
+				if (fn) {
+					return promise.then(fn);
 				}
 				return promise;
 			}

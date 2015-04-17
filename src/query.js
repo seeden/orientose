@@ -388,15 +388,11 @@ export default class Query {
 		return this;
 	}
 
-	then(){
-		return this.exec('then');
+	then(fn){
+		return this.exec(fn);
 	}
 
-	map() {
-		return this.exec('map');
-	}
-
-	exec(promiseMethod) {
+	exec(fn) {
 
 		var model = this.model;
 		var schema = model.schema;
@@ -516,9 +512,8 @@ export default class Query {
 			}
 			return Promise.resolve(results);
 		});
-
-		if ( promiseMethod ) {
-			return promise[promiseMethod];
+		if ( fn ) {
+			return promise.then(fn);
 		}
 		return promise;
 	}		
