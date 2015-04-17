@@ -490,11 +490,19 @@ var Query = (function () {
 				return this;
 			})
 		},
+		then: {
+			value: function then() {
+				return this.exec("then");
+			}
+		},
+		map: {
+			value: function map() {
+				return this.exec("map");
+			}
+		},
 		exec: {
-			value: function exec(callback) {
+			value: function exec(promiseMethod) {
 				var _this = this;
-
-				callback = callback || function () {};
 
 				var model = this.model;
 				var schema = model.schema;
@@ -595,7 +603,7 @@ var Query = (function () {
 
 				log(q.buildStatement(), q.buildOptions());
 
-				return query.exec().then(function (results) {
+				var promise = query.exec().then(function (results) {
 					if (!results) {
 						return Promise.resolve(results);
 					}
@@ -609,6 +617,11 @@ var Query = (function () {
 					}
 					return Promise.resolve(results);
 				});
+
+				if (promiseMethod) {
+					return promise[promiseMethod];
+				}
+				return promise;
 			}
 		}
 	});

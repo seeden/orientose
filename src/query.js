@@ -388,8 +388,15 @@ export default class Query {
 		return this;
 	}
 
-	exec(callback) {
-		callback = callback || function() {};
+	then(){
+		return this.exec('then');
+	}
+
+	map() {
+		return this.exec('map');
+	}
+
+	exec(promiseMethod) {
 
 		var model = this.model;
 		var schema = model.schema;
@@ -495,7 +502,7 @@ export default class Query {
 
 		log(q.buildStatement(), q.buildOptions());
 
-		return query.exec().then(results => {
+		var promise = query.exec().then(results => {
 			if(!results) {
 				return Promise.resolve(results);
 			}
@@ -509,5 +516,10 @@ export default class Query {
 			}
 			return Promise.resolve(results);
 		});
+
+		if ( promiseMethod ) {
+			return promise[promiseMethod];
+		}
+		return promise;
 	}		
 }
