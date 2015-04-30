@@ -60,6 +60,7 @@ var Query = (function () {
 
 		this._first = false;
 		this._scalar = false;
+		this._raw = false;
 
 		this._limit = null;
 		this._skip = null;
@@ -98,6 +99,11 @@ var Query = (function () {
 				return this.model.schema;
 			}
 		},
+		count: {
+			value: function count(key) {
+				return this.select("count(" + key + ")");
+			}
+		},
 		select: {
 			value: function select(key) {
 				this._selects.push(key);
@@ -130,6 +136,13 @@ var Query = (function () {
 				var param;
 				if (true === value.__orientose_raw__) {
 					param = value;
+				} else if (Array.isArray(value)) {
+					param = [];
+					for (var i = 0; i < value.length; i++) {
+						var paramName = this.nextParamName(propertyName);
+						param[i] = ":" + paramName;
+						this.addParam(paramName, value[i]);
+					}
 				} else {
 					var paramName = this.nextParamName(propertyName);
 					param = ":" + paramName;
@@ -140,6 +153,12 @@ var Query = (function () {
 						return propertyName + " IS NULL";
 					} else if (operator === "!=" || operator === "<>" || operator === "NOT") {
 						return propertyName + " IS NOT NULL";
+					}
+				}
+
+				if (Array.isArray(value)) {
+					if (operator.toLowerCase() === "between") {
+						return propertyName + " BETWEEN " + param.join(" AND ");
 					}
 				}
 
@@ -334,6 +353,12 @@ var Query = (function () {
 				return this;
 			}
 		},
+		raw: {
+			value: function raw() {
+				this._raw = true;
+				return this;
+			}
+		},
 		scalar: {
 			value: function scalar(useScalar) {
 				this._scalar = !!useScalar;
@@ -495,6 +520,11 @@ var Query = (function () {
 				return this.exec(fn);
 			}
 		},
+		map: {
+			value: function map(fn) {
+				return this.exec().map(fn);
+			}
+		},
 		exec: {
 			value: function exec(fn) {
 				var _this = this;
@@ -571,7 +601,7 @@ var Query = (function () {
 
 				query.addParams(this._params);
 
-				if (!this._scalar && (operation === Operation.SELECT || operation === Operation.INSERT)) {
+				if (!this._scalar && !this._raw && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 					query = query.transform(function (record) {
 						return model._createDocument(record);
 					});

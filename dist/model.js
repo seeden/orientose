@@ -401,6 +401,7 @@ var Model = (function (_EventEmitter) {
 		},
 		where: {
 			value: function where(conditions) {
+				console.log("+++++++++++++++++++++");
 				return this.createQuery({}).where(conditions);
 			}
 		},
@@ -427,6 +428,11 @@ var Model = (function (_EventEmitter) {
 		remove: {
 			value: function remove(conditions, callback) {
 				return this.createQuery({}).remove(conditions, callback);
+			}
+		},
+		count: {
+			value: function count(key) {
+				return this.createQuery({}).count(key);
 			}
 		}
 	});

@@ -348,6 +348,7 @@ export default class Model extends EventEmitter {
 	}
 
 	where(conditions) {
+		console.log("+++++++++++++++++++++");
 		return this.createQuery({}).where(conditions);
 	}
 
@@ -374,5 +375,9 @@ export default class Model extends EventEmitter {
 	remove (conditions, callback) {
 		return this.createQuery({})
 			.remove(conditions, callback);
+	}
+	count(key) {
+		return this.createQuery({})
+			.count(key);
 	}
 }

@@ -9,5 +9,7 @@ export default {
 	'$ne': '<>',
 	'$eq': '=',
 	'contains': 'contains',
-	'NOT': 'NOT'
+	'NOT': 'NOT',
+	'between': 'between',
+	'BETWEEN': 'between'
 };

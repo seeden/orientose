@@ -153,6 +153,10 @@ export default class Document extends EventEmitter {
 			.findOne(conditions, callback);
 	}
 
+	static count(key) {
+		return this._model.count(key);
+	}
+
 	static find(conditions, callback) {
 		return this._model
 			.find(conditions, callback);

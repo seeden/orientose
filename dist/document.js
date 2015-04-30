@@ -186,6 +186,11 @@ var Document = (function (_EventEmitter) {
 				return this._model.findOne(conditions, callback);
 			}
 		},
+		count: {
+			value: function count(key) {
+				return this._model.count(key);
+			}
+		},
 		find: {
 			value: function find(conditions, callback) {
 				return this._model.find(conditions, callback);

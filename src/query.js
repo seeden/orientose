@@ -40,6 +40,7 @@ export default class Query {
 
 		this._first    = false;
 		this._scalar = false;
+		this._raw = false;
 
 		this._limit  = null;
 		this._skip   = null;
@@ -75,6 +76,10 @@ export default class Query {
 		return this.model.schema;
 	}
 
+	count(key) {
+		return this.select('count('+key+')');
+	}
+
 	select(key) {
 		this._selects.push(key);
 		return this;
@@ -101,6 +106,13 @@ export default class Query {
 		var param;
 		if ( true === value.__orientose_raw__ ) {
 			param = value;
+		} else if ( Array.isArray(value) ) {
+			param = [];
+			for ( var i = 0; i < value.length; i++ ) {
+				var paramName = this.nextParamName(propertyName);
+				param[i] = ":"+paramName;
+				this.addParam(paramName, value[i]);
+			}
 		} else {
 			var paramName = this.nextParamName(propertyName);
 			param = ":"+paramName;
@@ -111,6 +123,12 @@ export default class Query {
 				return propertyName + ' IS NULL';
 			} else if(operator === '!=' || operator === '<>' || operator === 'NOT') {
 				return propertyName + ' IS NOT NULL';
+			}
+		}
+
+		if ( Array.isArray(value) ) {
+			if ( operator.toLowerCase() === "between" ) {
+				return propertyName + ' BETWEEN ' + param.join(' AND ');
 			}
 		}
 
@@ -276,6 +294,11 @@ export default class Query {
 		return this;
 	}
 
+	raw() {
+		this._raw = true;
+		return this;
+	}
+
 	scalar(useScalar) {
 		this._scalar = !!useScalar;
 		return this;
@@ -392,6 +415,10 @@ export default class Query {
 		return this.exec(fn);
 	}
 
+	map(fn) {
+		return this.exec().map(fn);
+	}
+
 	exec(fn) {
 
 		var model = this.model;
@@ -469,7 +496,7 @@ export default class Query {
 
 		query.addParams(this._params);
 
-		if(!this._scalar && (operation === Operation.SELECT || operation === Operation.INSERT)) {
+		if(!this._scalar && !this._raw && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 			query = query.transform(function(record) {
 				return model._createDocument(record);
 			});
