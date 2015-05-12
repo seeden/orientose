@@ -157,8 +157,11 @@ var Query = (function () {
 				}
 
 				if (Array.isArray(value)) {
-					if (operator.toLowerCase() === "between") {
+					var op = operator.toLowerCase();
+					if ("between" === op) {
 						return propertyName + " BETWEEN " + param.join(" AND ");
+					} else if ("in" === op) {
+						return propertyName + " IN (" + param.join(", ") + ") ";
 					}
 				}
 
