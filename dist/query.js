@@ -187,14 +187,12 @@ var Query = (function () {
 
 					// optimizations by converting rid so as to ensure indexes are used
 					var type = _this.schema.getSchemaType(propertyName);
-					console.log("LINK" === _this.schema.getSchemaType(propertyName).getDbType(), !(value instanceof RecordID));
+
 					if ("LINK" === _this.schema.getSchemaType(propertyName).getDbType() && !(value instanceof RecordID)) {
-						console.log("did we reach here?!?!");
 						// this should be converted and allowed to be pure RID
 						value = new RecordID(value);
 					}
 
-					console.log(value, typeof value, value instanceof RecordID, "&&&&&&&&&&&&&&&&&&&");
 					if (LogicOperators[propertyName]) {
 						var subQueries = [];
 
@@ -221,7 +219,7 @@ var Query = (function () {
 					// value = value.toString();
 					// }
 
-					if (!_.isObject(value)) {
+					if (!_.isObject(value) || value instanceof RecordID) {
 						var query = _this.createComparisonQuery(propertyName, "=", value);
 						return items.push(query);
 					}

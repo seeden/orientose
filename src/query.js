@@ -186,7 +186,7 @@ export default class Query {
 				// value = value.toString();
 			// }
 
-			if(!_.isObject(value)) {
+			if(!_.isObject(value) || value instanceof RecordID) {
 				var query = this.createComparisonQuery(propertyName, '=', value);
 				return items.push(query);
 			}
