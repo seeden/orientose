@@ -142,6 +142,7 @@ export default class Query {
 		var items = [];
 
 		Object.keys(conditions).forEach(propertyName => {
+			
 			if(propertyName === '_id') {
 				propertyName = '@rid';
 			}
@@ -149,6 +150,14 @@ export default class Query {
 			var value = conditions[propertyName];
 			if(typeof value === 'undefined') {
 				return;
+			}
+
+			// optimizations by converting rid so as to ensure indexes are used
+			var type = this.schema.getSchemaType(propertyName);
+
+			if ( "LINK" === this.schema.getSchemaType(propertyName).getDbType() && !(value instanceof RecordID)) {
+				// this should be converted and allowed to be pure RID
+				value = new RecordID(value);
 			}
 
 			if(LogicOperators[propertyName]) {
@@ -173,9 +182,9 @@ export default class Query {
 				return items.push(query);
 			}
 
-			if(value instanceof RecordID) {
-				value = value.toString();
-			}
+			// if(value instanceof RecordID) {
+				// value = value.toString();
+			// }
 
 			if(!_.isObject(value)) {
 				var query = this.createComparisonQuery(propertyName, '=', value);
@@ -184,9 +193,9 @@ export default class Query {
 
 			Object.keys(value).forEach(operation => {
 				var operationValue = value[operation];
-				if(value instanceof RecordID) {
-					value = value.toString();
-				}
+				// if(value instanceof RecordID) {
+					// value = value.toString();
+				// }
 
 				var query = null;
 				if(ComparisonOperators[operation]) {

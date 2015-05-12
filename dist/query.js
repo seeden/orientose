@@ -175,6 +175,7 @@ var Query = (function () {
 				var items = [];
 
 				Object.keys(conditions).forEach(function (propertyName) {
+
 					if (propertyName === "_id") {
 						propertyName = "@rid";
 					}
@@ -184,6 +185,16 @@ var Query = (function () {
 						return;
 					}
 
+					// optimizations by converting rid so as to ensure indexes are used
+					var type = _this.schema.getSchemaType(propertyName);
+					console.log("LINK" === _this.schema.getSchemaType(propertyName).getDbType(), !(value instanceof RecordID));
+					if ("LINK" === _this.schema.getSchemaType(propertyName).getDbType() && !(value instanceof RecordID)) {
+						console.log("did we reach here?!?!");
+						// this should be converted and allowed to be pure RID
+						value = new RecordID(value);
+					}
+
+					console.log(value, typeof value, value instanceof RecordID, "&&&&&&&&&&&&&&&&&&&");
 					if (LogicOperators[propertyName]) {
 						var subQueries = [];
 
@@ -206,9 +217,9 @@ var Query = (function () {
 						return items.push(query);
 					}
 
-					if (value instanceof RecordID) {
-						value = value.toString();
-					}
+					// if(value instanceof RecordID) {
+					// value = value.toString();
+					// }
 
 					if (!_.isObject(value)) {
 						var query = _this.createComparisonQuery(propertyName, "=", value);
@@ -217,9 +228,9 @@ var Query = (function () {
 
 					Object.keys(value).forEach(function (operation) {
 						var operationValue = value[operation];
-						if (value instanceof RecordID) {
-							value = value.toString();
-						}
+						// if(value instanceof RecordID) {
+						// value = value.toString();
+						// }
 
 						var query = null;
 						if (ComparisonOperators[operation]) {
