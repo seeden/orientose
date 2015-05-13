@@ -25,6 +25,8 @@ const Operator = {
 	WHERE : 'where'
 };
 
+const rRIDLike = /^[\d]+:[\d]+$/;
+
 export default class Query {
 	constructor(model, options) {
 		options = options || {};
@@ -155,8 +157,11 @@ export default class Query {
 			// optimizations by converting rid so as to ensure indexes are used
 			var type = this.schema.getSchemaType(propertyName);
 
-			if ( "LINK" === this.schema.getSchemaType(propertyName).getDbType() && !(value instanceof RecordID)) {
+			if ( type && "LINK" === type.getDbType() && !(value instanceof RecordID)) {
 				// this should be converted and allowed to be pure RID
+				if ( typeof value === "string" && rRIDLike.test(value) ) {
+					value = "#"+value;
+				}
 				value = new RecordID(value);
 			}
 

@@ -43,6 +43,8 @@ var Operator = {
 	WHERE: "where"
 };
 
+var rRIDLike = /^[\d]+:[\d]+$/;
+
 var Query = (function () {
 	function Query(model, options) {
 		_classCallCheck(this, Query);
@@ -188,8 +190,11 @@ var Query = (function () {
 					// optimizations by converting rid so as to ensure indexes are used
 					var type = _this.schema.getSchemaType(propertyName);
 
-					if ("LINK" === _this.schema.getSchemaType(propertyName).getDbType() && !(value instanceof RecordID)) {
+					if (type && "LINK" === type.getDbType() && !(value instanceof RecordID)) {
 						// this should be converted and allowed to be pure RID
+						if (typeof value === "string" && rRIDLike.test(value)) {
+							value = "#" + value;
+						}
 						value = new RecordID(value);
 					}
 
