@@ -133,7 +133,7 @@ export default class Query {
 			if ( "between" === op ) {
 				return propertyName + ' BETWEEN ' + param.join(' AND ');
 			} else if ( "in" === op ) {
-				return propertyName + ' IN (' + param.join(', ') + ") ";
+				return propertyName + ' IN [' + param.join(', ') + "] ";
 			}
 		}
 
