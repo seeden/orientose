@@ -53,7 +53,7 @@ export default class Query {
 		this._let 	 = {};
 
 		this._selects = [];
-		
+
 		this._operation = null;
 
 		this._params = {};
@@ -136,15 +136,15 @@ export default class Query {
 				return propertyName + ' IN (' + param.join(', ') + ") ";
 			}
 		}
-		
-		return propertyName + ' ' + operator + ' ' + param;		
+
+		return propertyName + ' ' + operator + ' ' + param;
 	}
 
 	queryLanguage(conditions) {
 		var items = [];
 
 		Object.keys(conditions).forEach(propertyName => {
-			
+
 			if(propertyName === '_id') {
 				propertyName = '@rid';
 			}
@@ -162,12 +162,15 @@ export default class Query {
 				if ( typeof value === "string" && rRIDLike.test(value) ) {
 					value = "#"+value;
 				}
-				value = new RecordID(value);
+				var oldvalue = new RecordID(value);
+                if ( oldvalue ) {
+                    value = oldvalue;
+                }
 			}
 
 			if(LogicOperators[propertyName]) {
 				var subQueries = [];
-				
+
 				value.forEach(conditions => {
 					var query = this.queryLanguage(conditions);
 					if(!query) {
@@ -204,7 +207,7 @@ export default class Query {
 
 				var query = null;
 				if(ComparisonOperators[operation]) {
-					query = this.createComparisonQuery(propertyName, 
+					query = this.createComparisonQuery(propertyName,
 						ComparisonOperators[operation], operationValue);
 				}
 
@@ -213,7 +216,7 @@ export default class Query {
 				}
 
 				items.push(query);
-				
+
 			});
 		});
 
@@ -243,7 +246,7 @@ export default class Query {
 		if(typeof conditions === 'function') {
 			callback = conditions;
 			conditions = void 0;
-		}	
+		}
 
 		if(typeof conditions === 'string') {
 			this._target = conditions;
@@ -302,7 +305,7 @@ export default class Query {
 
 	set(doc) {
 		this._set = doc;
-		return this;	
+		return this;
 	}
 
 	first(useFirst) {
@@ -323,7 +326,7 @@ export default class Query {
 	limit(limit) {
 		this._limit = limit;
 		return this;
-	}	
+	}
 
 	skip(skip) {
 		this._skip = skip;
@@ -338,7 +341,7 @@ export default class Query {
 	to(value) {
 		this._to = value;
 		return this;
-	}		
+	}
 
 	sort(sort) {
 		if(typeof sort === 'string') {
@@ -396,7 +399,7 @@ export default class Query {
 			.set(doc)
 			.scalar(true)
 			.condExec(conditions, true);
-	}	
+	}
 
 	//find([conditions], [callback])
 	find(conditions) {
@@ -411,8 +414,8 @@ export default class Query {
 			.operation(Operation.SELECT)
 			.limit(1)
 			.first(true)
-			.condExec(conditions, true);	
-	}	
+			.condExec(conditions, true);
+	}
 
 	//remove([conditions], [callback])
 	remove(conditions) {
@@ -456,8 +459,8 @@ export default class Query {
 		}
 		var q = query;
 
-		var target = this._target && this._target['@rid'] 
-			? this._target['@rid'] 
+		var target = this._target && this._target['@rid']
+			? this._target['@rid']
 			: this._target;
 			console.log('AT LEAST WE REACHED HERE?!?!?');
 
@@ -487,16 +490,16 @@ export default class Query {
 				query = query.select(selects).from(target);
 			} else {
 				query = query.update(target);
-			}			
-		}	
+			}
+		}
 
 		if(this._from) {
 			query.from(this._from && this._from['@rid'] ? this._from['@rid'] : this._from);
-		}	
+		}
 
 		if(this._to) {
 			query.to(this._to && this._to['@rid'] ? this._to['@rid'] : this._to);
-		}			
+		}
 
 		if(this._set) {
 			query.set(this._set);
@@ -524,7 +527,7 @@ export default class Query {
 
 		if(this._skip) {
 			query = query.skip(this._skip);
-		}		
+		}
 
 		if(this._sort) {
 			var order = {};
@@ -532,7 +535,7 @@ export default class Query {
 			Object.keys(this._sort).forEach(key => {
 				var value = this._sort[key];
 				order[key] = value === 'asc' || value === 'ascending' || value === 1
-					? 'ASC' 
+					? 'ASC'
 					: 'DESC';
 			});
 
@@ -559,5 +562,5 @@ export default class Query {
 			return promise.then(fn);
 		}
 		return promise;
-	}		
+	}
 }

@@ -66,7 +66,7 @@ var Data = (function () {
 				for (var propName in this._data) {
 					var prop = this._data[propName];
 
-					if (prop instanceof VirtualType && !options.virtuals) {
+					if (prop instanceof VirtualType && options.virtuals === false) {
 						continue;
 					}
 

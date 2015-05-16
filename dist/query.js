@@ -195,7 +195,10 @@ var Query = (function () {
 						if (typeof value === "string" && rRIDLike.test(value)) {
 							value = "#" + value;
 						}
-						value = new RecordID(value);
+						var oldvalue = new RecordID(value);
+						if (oldvalue) {
+							value = oldvalue;
+						}
 					}
 
 					if (LogicOperators[propertyName]) {
