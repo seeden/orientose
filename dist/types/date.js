@@ -35,7 +35,7 @@ var DateType = (function (_Type) {
 		toJSON: {
 			value: function toJSON(options) {
 				var value = this.value;
-				return value && value.getTime ? value.getTime() : value.value;
+				return value && value.getTime ? value.getTime() : value && value.value ? value.value : value;
 			}
 		}
 	}, {

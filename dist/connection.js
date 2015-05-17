@@ -71,6 +71,11 @@ var Connection = (function (_EventEmitter) {
 				return this._server;
 			}
 		},
+		Oriento: {
+			get: function () {
+				return Oriento;
+			}
+		},
 		model: {
 			value: function model(name, schema, options) {
 

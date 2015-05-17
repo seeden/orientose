@@ -13,7 +13,9 @@ export default class DateType extends Type {
 		var value = this.value;
 		return (value && value.getTime)
 			? value.getTime()
-			: value.value;
+			: (value && value.value )
+				? value.value
+				: value;
 	}
 
 	static toString() {

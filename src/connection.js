@@ -47,6 +47,10 @@ export default class Connection extends EventEmitter {
 		return this._server;
 	}
 
+	get Oriento() {
+		return Oriento;
+	}
+
 	model (name, schema, options) {
 
 		options = options || {};
