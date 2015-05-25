@@ -11,7 +11,7 @@ export function prepareSchema(schema) {
 		'@type'    : { type: String, readonly: true, metadata: true, query: true, default: 'document' },
 		'@class'   : { type: String, readonly: true, metadata: true, query: true, default: getDefaultClassName},
 		'@rid'     : { type: RID, readonly: true, metadata: true },
-		'@version' : { type: Number, readonly: true, metadata: true },
+		'version' : { type: Number, readonly: true, metadata: true },
 	});
 
 	schema.virtual('rid', { metadata: true }).get(function() {
@@ -19,6 +19,10 @@ export function prepareSchema(schema) {
 	});
 
 	var _id = schema.virtual('_id', { metadata: true });
+	var version = schema.virtual('@version', { metadata: true });
+	version.get(function(){
+		return this.get('version')
+	})
 
 	_id.get(function() {
 		return this.get('@rid');
