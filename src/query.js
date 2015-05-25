@@ -462,12 +462,14 @@ export default class Query {
 		var target = this._target && this._target['@rid']
 			? this._target['@rid']
 			: this._target;
-			console.log('AT LEAST WE REACHED HERE?!?!?');
 
 		var isGraph = schema instanceof GraphSchema;
 		var selects;
 		if ( this._selects.length > 0 ) {
+			this._selects.push("@version");
 			selects = this._selects.join(",");
+		} else {
+			selects = "*, @version"
 		}
 		if(isGraph) {
 			var graphType = schema instanceof EdgeSchema ? 'EDGE' : 'VERTEX';
