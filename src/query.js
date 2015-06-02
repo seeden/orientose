@@ -106,7 +106,7 @@ export default class Query {
 
 	createComparisonQuery(propertyName, operator, value) {
 		var param;
-		if ( true === value.__orientose_raw__ ) {
+		if ( value && true === value.__orientose_raw__ ) {
 			param = value;
 		} else if ( Array.isArray(value) ) {
 			param = [];
