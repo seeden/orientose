@@ -1,3 +1,7 @@
+# This package was split into two new packages named livia and livia-orientdb
+
+This package is not maintenance anymore.
+
 # Orientose
 
 Orientose is a OrientDB object modeling with support of schemas inspired by mongoose. Some features of mongoose are used in simplified way. Orientose will create database structure for you automatically from your schema. 
