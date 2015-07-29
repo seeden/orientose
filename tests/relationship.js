@@ -8,7 +8,6 @@ var connection = null;
 describe('Relationship', function() {
 	var Cat, Dog, Owner, OwnsA;
 	var CatSchema, DogSchema, OwnerSchema, OwnsASchema;
-
 	it('should be able to create a connection', function(done) {
 		connection = new Orientose({
 			host: 'localhost',
@@ -49,7 +48,7 @@ describe('Relationship', function() {
 		}).catch(done);
 	});
 
-	var CatData = {name: "meow"}, DogData = {name: "bark"}, OwnerData = {name: "felix"}, WildDogData = {name: "bite"}
+    var CatData = {name: "meow"}, DogData = {name: "bark"}, OwnerData = {name: "felix"}, WildDogData = {name: "bite"}
 
 	it('should be able to create vertex', function() {
 		var cat = new Cat(CatData);
@@ -76,7 +75,6 @@ describe('Relationship', function() {
 			.exec()
 		   .then(function(cat){
 		   		cat.name.should.equal(CatData.name)
-		   		cat.
 		   		done();
 		   }).catch(done);
 	});
@@ -88,14 +86,11 @@ describe('Relationship', function() {
 				done();
 			}).catch(done);
 	});
-	it('should find one dog that is owned', function(done) {
-		Dog.in(OwnsA)
-		   .of(Owner.findOne({name: OwnerData.name}))
-		   .exec()
-		   .then(function(dogs){
-		   		dogs.length.should.equal(1);
-		   		dog.name.should.equal(DogData.name)
-		   		done();
-		   }).catch(done);
-	});
+    it('should be able to remove all created', function(done){
+        Promise.all([
+            Cat.remove().then(function(len){ len.should.equal(1);}),
+            Dog.remove().then(function(len){ len.should.equal(2);}),
+            Owner.remove().then(function(len){ len.should.equal(1); })
+        ]).then(function(){done();});
+    })
 });

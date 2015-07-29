@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import Oriento from 'oriento';
+import Oriento from 'orientjs';
 import Model from './model';
 import ReadyState from './constants/readystate';
 

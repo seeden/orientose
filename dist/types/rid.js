@@ -12,11 +12,11 @@ var Type = _interopRequire(require("./type"));
 
 var _ = _interopRequire(require("lodash"));
 
-var _oriento = require("oriento");
+var _orientjs = require("orientjs");
 
-var orineto = _interopRequire(_oriento);
+var orineto = _interopRequire(_orientjs);
 
-var RecordID = _oriento.RecordID;
+var RecordID = _orientjs.RecordID;
 
 var RIDType = (function (_Type) {
 	function RIDType() {

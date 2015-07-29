@@ -4,7 +4,7 @@ import SchemaV from './schemas/orient/v';
 import SchemaE from './schemas/orient/e';
 import Model from './model';
 import Type from './types/index';
-import Oriento from "oriento";
+import Oriento from "orientjs";
 
 SchemaOrient.E = SchemaE;
 SchemaOrient.V = SchemaV;

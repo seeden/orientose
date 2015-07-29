@@ -6,7 +6,7 @@ var _createClass = (function () { function defineProperties(target, props) { for
 
 var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
 
-var OrientoQuery = _interopRequire(require("oriento/lib/db/query"));
+var OrientoQuery = _interopRequire(require("orientjs/lib/db/query"));
 
 var debug = _interopRequire(require("debug"));
 
@@ -18,7 +18,7 @@ var GraphSchema = _interopRequire(require("./schemas/graph"));
 
 var EdgeSchema = _interopRequire(require("./schemas/edge"));
 
-var RecordID = require("oriento").RecordID;
+var RecordID = require("orientjs").RecordID;
 
 var LogicOperators = _interopRequire(require("./constants/logicoperators"));
 
@@ -71,6 +71,8 @@ var Query = (function () {
 		this._from = null;
 		this._to = null;
 		this._let = {};
+
+		this._group = undefined;
 
 		this._selects = [];
 
@@ -429,6 +431,14 @@ var Query = (function () {
 				return this;
 			}
 		},
+		group: {
+			value: function group(key) {
+				this._group = this._group || [];
+				var args = Array.prototype.slice.call(arguments);
+				this._group.push.apply(this._group, args);
+				return this;
+			}
+		},
 		sort: {
 			value: (function (_sort) {
 				var _sortWrapper = function sort(_x7) {
@@ -623,7 +633,7 @@ var Query = (function () {
 
 				query.addParams(this._params);
 
-				if (!this._scalar && !this._raw && (operation === Operation.SELECT || operation === Operation.INSERT)) {
+				if (!this._scalar && !this._raw && !this._group && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 					query = query.transform(function (record) {
 						return model._createDocument(record);
 					});
@@ -646,6 +656,10 @@ var Query = (function () {
 					});
 
 					query = query.order(order);
+				}
+
+				if (this._group) {
+					query = query.group.apply(query, this._group);
 				}
 
 				log(q.buildStatement(), q.buildOptions());

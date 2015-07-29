@@ -18,7 +18,7 @@ var Model = _interopRequire(require("./model"));
 
 var Type = _interopRequire(require("./types/index"));
 
-var Oriento = _interopRequire(require("oriento"));
+var Oriento = _interopRequire(require("orientjs"));
 
 SchemaOrient.E = SchemaE;
 SchemaOrient.V = SchemaV;

@@ -1,6 +1,6 @@
 import Type from './type';
 import _ from 'lodash';
-import orineto, { RecordID } from 'oriento';
+import orineto, { RecordID } from 'orientjs';
 
 export default class RIDType extends Type {
 	_serialize(value) {

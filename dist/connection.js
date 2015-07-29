@@ -10,7 +10,7 @@ var _classCallCheck = function (instance, Constructor) { if (!(instance instance
 
 var EventEmitter = require("events").EventEmitter;
 
-var Oriento = _interopRequire(require("oriento"));
+var Oriento = _interopRequire(require("orientjs"));
 
 var Model = _interopRequire(require("./model"));
 

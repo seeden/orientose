@@ -1,10 +1,10 @@
-import OrientoQuery from 'oriento/lib/db/query';
+import OrientoQuery from 'orientjs/lib/db/query';
 import debug from 'debug';
 import _ from 'lodash';
 import Document from './document';
 import GraphSchema from './schemas/graph';
 import EdgeSchema from './schemas/edge';
-import { RecordID } from 'oriento';
+import { RecordID } from 'orientjs';
 import LogicOperators from './constants/logicoperators';
 import ComparisonOperators from './constants/comparisonoperators';
 import extend from "node.extend";
@@ -51,6 +51,8 @@ export default class Query {
 		this._from   = null;
 		this._to     = null;
 		this._let 	 = {};
+
+        this._group = undefined;
 
 		this._selects = [];
 
@@ -343,6 +345,13 @@ export default class Query {
 		return this;
 	}
 
+    group(key) {
+        this._group = this._group || [];
+        var args = Array.prototype.slice.call(arguments);
+        this._group.push.apply(this._group, args);
+        return this;
+    }
+
 	sort(sort) {
 		if(typeof sort === 'string') {
 			var order = {};
@@ -517,7 +526,7 @@ export default class Query {
 
 		query.addParams(this._params);
 
-		if(!this._scalar && !this._raw && (operation === Operation.SELECT || operation === Operation.INSERT)) {
+		if(!this._scalar && !this._raw && !this._group && (operation === Operation.SELECT || operation === Operation.INSERT)) {
 			query = query.transform(function(record) {
 				return model._createDocument(record);
 			});
@@ -543,6 +552,10 @@ export default class Query {
 
 			query = query.order(order);
 		}
+
+        if ( this._group ) {
+            query = query.group.apply(query, this._group);
+        }
 
 		log(q.buildStatement(), q.buildOptions());
 
