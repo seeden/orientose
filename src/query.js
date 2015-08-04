@@ -108,6 +108,7 @@ export default class Query {
 
 	createComparisonQuery(propertyName, operator, value) {
 		var param;
+		var type = this.schema.getSchemaType(propertyName);
 		if ( value && true === value.__orientose_raw__ ) {
 			param = value;
 		} else if ( Array.isArray(value) ) {
@@ -115,11 +116,17 @@ export default class Query {
 			for ( var i = 0; i < value.length; i++ ) {
 				var paramName = this.nextParamName(propertyName);
 				param[i] = ":"+paramName;
+				if ((type && "LINK" === type.getDbType() || "@rid" === propertyName) && !(param instanceof RecordID) ) {
+					value[i] = this.convertToRID(value[i]);
+				}
 				this.addParam(paramName, value[i]);
 			}
 		} else {
 			var paramName = this.nextParamName(propertyName);
 			param = ":"+paramName;
+			if ((type && "LINK" === type.getDbType() || "@rid" === propertyName) && !(param instanceof RecordID) ) {
+				value = this.convertToRID(value);
+			}
 			this.addParam(paramName, value);
 		}
 		if(value === null) {
@@ -130,7 +137,7 @@ export default class Query {
 			}
 		}
 
-		if ( Array.isArray(value) ) {
+		if ( Array.isArray(param) ) {
 			var op = operator.toLowerCase();
 			if ( "between" === op ) {
 				return propertyName + ' BETWEEN ' + param.join(' AND ');
@@ -141,7 +148,16 @@ export default class Query {
 
 		return propertyName + ' ' + operator + ' ' + param;
 	}
-
+	convertToRID(value) {
+		if ( typeof value === "string" && rRIDLike.test(value) ) {
+			value = "#"+value;
+		}
+		var oldvalue = new RecordID(value);
+		if ( oldvalue ) {
+				value = oldvalue;
+		}
+		return value;
+	}
 	queryLanguage(conditions) {
 		var items = [];
 
@@ -154,20 +170,6 @@ export default class Query {
 			var value = conditions[propertyName];
 			if(typeof value === 'undefined') {
 				return;
-			}
-
-			// optimizations by converting rid so as to ensure indexes are used
-			var type = this.schema.getSchemaType(propertyName);
-
-			if ( type && "LINK" === type.getDbType() && !(value instanceof RecordID)) {
-				// this should be converted and allowed to be pure RID
-				if ( typeof value === "string" && rRIDLike.test(value) ) {
-					value = "#"+value;
-				}
-				var oldvalue = new RecordID(value);
-                if ( oldvalue ) {
-                    value = oldvalue;
-                }
 			}
 
 			if(LogicOperators[propertyName]) {
