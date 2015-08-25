@@ -72,10 +72,31 @@ var ArrayType = (function (_Type) {
 				return this._value.push(this._createItem(value));
 			}
 		},
+		splice: {
+			value: function splice(start, count) {
+				var items = [].slice.call(arguments, 2);
+				var self = this;
+				items = items.map(function (value) {
+					return self._createItem(value);
+				});
+				items.splice(0, 0, start, count);
+				return this._value.splice.apply(this._value, items);
+			}
+		},
 		pop: {
 			value: function pop() {
 				var item = this._value.pop();
 				return item ? item.value : item;
+			}
+		},
+		length: {
+			get: function () {
+				return this._value.length;
+			}
+		},
+		get: {
+			value: function get(i) {
+				return this._value[i];
 			}
 		},
 		forEach: {

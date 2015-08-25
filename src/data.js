@@ -13,11 +13,11 @@ export default class Data {
 		this._schema = schema;
 		this._data = {};
 		this._className = className;
-		this._mainData = mainData;	
+		this._mainData = mainData;
 
 		schema.traverse((propName, prop) => {
 			this._data[propName] = new prop.schemaType(this, prop, propName, mainData);
-		});	
+		});
 
 		this.set(properties);
 	}
@@ -29,7 +29,7 @@ export default class Data {
 		}
 
 		Object.keys(this._data).forEach(key => {
-			var value = returnType 
+			var value = returnType
 				? this._data[key]
 				: this.get(key);
 			fn(value, key);
@@ -95,7 +95,7 @@ export default class Data {
 				log('isModified Path not exists:' + path);
 				return;
 			}
-			
+
 			return this._data[path].isModified;
 		}
 
@@ -105,7 +105,7 @@ export default class Data {
 		if(!this._data[currentKey]) {
 			log('isModified deep Path not exists:' + currentKey);
 			return;
-		}		
+		}
 
 		var data = this._data[currentKey].value;
 		if(!data || !data.get) {
@@ -113,7 +113,7 @@ export default class Data {
 			throw new Error('Subdocument is not defined or it is not an object');
 		}
 
-		return data.get(newPath);		
+		return data.get(newPath);
 	}
 
 	get(path) {
@@ -159,7 +159,7 @@ export default class Data {
 				log('set Path not exists:' + path);
 				return this;
 			}
-			
+
 
 			property.value = value;
 			if(setAsOriginal) {

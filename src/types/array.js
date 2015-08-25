@@ -46,9 +46,27 @@ export default class ArrayType extends Type {
 		return this._value.push(this._createItem(value));
 	}
 
+	splice(start, count) {
+		var items = [].slice.call(arguments, 2);
+		var self = this;
+		items = items.map(function(value){
+			return self._createItem(value);
+		})
+		items.splice(0,0, start, count);
+		return this._value.splice.apply(this._value, items)
+	}
+
 	pop() {
 		var item = this._value.pop();
 		return item ? item.value : item;
+	}
+
+	get length() {
+		return this._value.length;
+	}
+
+	get(i) {
+		return this._value[i];
 	}
 
 	forEach(fn) {
@@ -61,7 +79,7 @@ export default class ArrayType extends Type {
 		return this._value.map(function(item) {
 			return fn(item.value);
 		});
-	}	
+	}
 
 	toJSON(options) {
 		return this._value.map(function(item) {
@@ -88,7 +106,7 @@ export default class ArrayType extends Type {
 		});
 
 		return isModified;
-	}		
+	}
 
 	static toString() {
 		return 'Array';
