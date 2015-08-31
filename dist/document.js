@@ -111,7 +111,7 @@ var Document = (function (_EventEmitter) {
 								virtuals: false,
 								metadata: false,
 								modified: true,
-								query: true
+								query: false //change by yecn at 2015-08-31 15:29
 							});
 
 							var model = self._model;
