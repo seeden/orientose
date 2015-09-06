@@ -9,6 +9,7 @@ import Promise from 'bluebird';
 
 export default class Connection extends EventEmitter {
 	constructor (options, dbOptions) {
+        super()
 		options = options || {};
 		dbOptions = dbOptions || {};
 

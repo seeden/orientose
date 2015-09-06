@@ -1,36 +1,61 @@
-"use strict";
+'use strict';
 
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+Object.defineProperty(exports, '__esModule', {
+	value: true
+});
 
-var BooleanType = _interopRequire(require("./boolean"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var IntegerType = _interopRequire(require("./integer"));
+var _boolean = require('./boolean');
 
-var LongType = _interopRequire(require("./long"));
+var _boolean2 = _interopRequireDefault(_boolean);
 
-var NumberType = _interopRequire(require("./number"));
+var _integer = require('./integer');
 
-var StringType = _interopRequire(require("./string"));
+var _integer2 = _interopRequireDefault(_integer);
 
-var ArrayType = _interopRequire(require("./array"));
+var _long = require('./long');
 
-var ObjectType = _interopRequire(require("./object"));
+var _long2 = _interopRequireDefault(_long);
 
-var MixedType = _interopRequire(require("./mixed"));
+var _number = require('./number');
 
-var RIDType = _interopRequire(require("./rid"));
+var _number2 = _interopRequireDefault(_number);
 
-var DateType = _interopRequire(require("./date"));
+var _string = require('./string');
 
-module.exports = {
-	Boolean: BooleanType,
-	Integer: IntegerType,
-	Long: LongType,
-	String: StringType,
-	Number: NumberType,
-	EmbeddedList: ArrayType,
-	Mixed: MixedType,
-	Rid: RIDType,
-	Date: DateType,
-	Embedded: ObjectType
+var _string2 = _interopRequireDefault(_string);
+
+var _array = require('./array');
+
+var _array2 = _interopRequireDefault(_array);
+
+var _object = require('./object');
+
+var _object2 = _interopRequireDefault(_object);
+
+var _mixed = require('./mixed');
+
+var _mixed2 = _interopRequireDefault(_mixed);
+
+var _rid = require('./rid');
+
+var _rid2 = _interopRequireDefault(_rid);
+
+var _date = require('./date');
+
+var _date2 = _interopRequireDefault(_date);
+
+exports['default'] = {
+	'Boolean': _boolean2['default'],
+	'Integer': _integer2['default'],
+	'Long': _long2['default'],
+	'String': _string2['default'],
+	'Number': _number2['default'],
+	EmbeddedList: _array2['default'],
+	Mixed: _mixed2['default'],
+	Rid: _rid2['default'],
+	'Date': _date2['default'],
+	Embedded: _object2['default']
 };
+module.exports = exports['default'];

@@ -1,41 +1,63 @@
-"use strict";
+'use strict';
 
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+Object.defineProperty(exports, '__esModule', {
+	value: true
+});
 
-var Type = _interopRequire(require("./type"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var StringType = _interopRequire(require("./string"));
+var _type = require('./type');
 
-var NumberType = _interopRequire(require("./number"));
+var _type2 = _interopRequireDefault(_type);
 
-var BooleanType = _interopRequire(require("./boolean"));
+var _string = require('./string');
 
-var DateType = _interopRequire(require("./date"));
+var _string2 = _interopRequireDefault(_string);
 
-var ObjectType = _interopRequire(require("./object"));
+var _number = require('./number');
 
-var ArrayType = _interopRequire(require("./array"));
+var _number2 = _interopRequireDefault(_number);
 
-var _ = _interopRequire(require("lodash"));
+var _boolean = require('./boolean');
 
-module.exports = function (type) {
+var _boolean2 = _interopRequireDefault(_boolean);
+
+var _date = require('./date');
+
+var _date2 = _interopRequireDefault(_date);
+
+var _object = require('./object');
+
+var _object2 = _interopRequireDefault(_object);
+
+var _array = require('./array');
+
+var _array2 = _interopRequireDefault(_array);
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+exports['default'] = function (type) {
 	if (!type) {
-		throw new Error("Type is not defined");
+		throw new Error('Type is not defined');
 	} else if (type.isSchemaType) {
 		return type;
 	} else if (type.isSchema) {
-		return ObjectType;
-	} else if (_.isArray(type)) {
-		return ArrayType;
+		return _object2['default'];
+	} else if (_lodash2['default'].isArray(type)) {
+		return _array2['default'];
 	} else if (type === String) {
-		return StringType;
+		return _string2['default'];
 	} else if (type === Number) {
-		return NumberType;
+		return _number2['default'];
 	} else if (type === Boolean) {
-		return BooleanType;
+		return _boolean2['default'];
 	} else if (type === Date) {
-		return DateType;
+		return _date2['default'];
 	}
 
-	throw new Error("Unrecognized type");
+	throw new Error('Unrecognized type');
 };
+
+module.exports = exports['default'];

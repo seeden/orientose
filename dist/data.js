@@ -1,24 +1,36 @@
-"use strict";
+'use strict';
 
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+Object.defineProperty(exports, '__esModule', {
+	value: true
+});
 
-var _get = function get(object, property, receiver) { var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc && desc.writable) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
-var _inherits = function (subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; };
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var Schema = _interopRequire(require("./schemas/index"));
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-var _ = _interopRequire(require("lodash"));
+var _schemasIndex = require('./schemas/index');
 
-var VirtualType = _interopRequire(require("./types/virtual"));
+var _schemasIndex2 = _interopRequireDefault(_schemasIndex);
 
-var debug = _interopRequire(require("debug"));
+var _lodash = require('lodash');
 
-var log = debug("orientose:data");
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _typesVirtual = require('./types/virtual');
+
+var _typesVirtual2 = _interopRequireDefault(_typesVirtual);
+
+var _debug = require('debug');
+
+var _debug2 = _interopRequireDefault(_debug);
+
+var log = (0, _debug2['default'])('orientose:data');
 
 var Data = (function () {
 	function Data(schema, properties, className, mainData) {
@@ -41,218 +53,217 @@ var Data = (function () {
 		this.set(properties);
 	}
 
-	_createClass(Data, {
-		forEach: {
-			value: function forEach(returnType, fn) {
-				var _this = this;
+	_createClass(Data, [{
+		key: 'forEach',
+		value: function forEach(returnType, fn) {
+			var _this2 = this;
 
-				if (typeof returnType === "function") {
-					fn = returnType;
-					returnType = false;
-				}
-
-				Object.keys(this._data).forEach(function (key) {
-					var value = returnType ? _this._data[key] : _this.get(key);
-					fn(value, key);
-				});
+			if (typeof returnType === 'function') {
+				fn = returnType;
+				returnType = false;
 			}
-		},
-		toJSON: {
-			value: function toJSON(options) {
-				var json = {};
 
-				options = options || {};
-
-				for (var propName in this._data) {
-					var prop = this._data[propName];
-
-					if (prop instanceof VirtualType && options.virtuals === false) {
-						continue;
-					}
-
-					if (options.metadata === false && prop.isMetadata) {
-						continue;
-					}
-
-					if (options.modified && !prop.isModified && !prop.hasDefault) {
-						continue;
-					}
-
-					json[propName] = prop.toJSON(options);
-				}
-
-				return json;
-			}
-		},
-		toObject: {
-			value: function toObject(options) {
-				var json = {};
-
-				options = options || {};
-
-				for (var propName in this._data) {
-					var prop = this._data[propName];
-
-					if (prop instanceof VirtualType) {
-						continue;
-					}
-
-					if (prop.isMetadata && !options.query) {
-						continue;
-					}
-
-					if (options.modified && !prop.isModified && !prop.hasDefault) {
-						continue;
-					}
-
-					json[propName] = prop.toObject(options);
-				}
-
-				return json;
-			}
-		},
-		isModified: {
-			value: function isModified(path) {
-				var pos = path.indexOf(".");
-				if (pos === -1) {
-					if (!this._data[path]) {
-						log("isModified Path not exists:" + path);
-						return;
-					}
-
-					return this._data[path].isModified;
-				}
-
-				var currentKey = path.substr(0, pos);
-				var newPath = path.substr(pos + 1);
-
-				if (!this._data[currentKey]) {
-					log("isModified deep Path not exists:" + currentKey);
-					return;
-				}
-
-				var data = this._data[currentKey].value;
-				if (!data || !data.get) {
-					return;
-					throw new Error("Subdocument is not defined or it is not an object");
-				}
-
-				return data.get(newPath);
-			}
-		},
-		get: {
-			value: function get(path) {
-				var pos = path.indexOf(".");
-				if (pos === -1) {
-					if (!this._data[path]) {
-						log("get Path not exists:" + path);
-						return;
-					}
-
-					return this._data[path].value;
-				}
-
-				var currentKey = path.substr(0, pos);
-				var newPath = path.substr(pos + 1);
-
-				if (!this._data[currentKey]) {
-					log("get deep Path not exists:" + currentKey, path, newPath);
-					return;
-				}
-
-				var data = this._data[currentKey].value;
-				if (!data || !data.get) {
-					return;
-					throw new Error("Subdocument is not defined or it is not an object");
-				}
-
-				return data.get(newPath);
-			}
-		},
-		set: {
-			value: function set(path, value, setAsOriginal) {
-				if (_.isPlainObject(path)) {
-					for (var key in path) {
-						this.set(key, path[key], setAsOriginal);
-					}
-					return this;
-				}
-
-				var pos = path.indexOf(".");
-				if (pos === -1) {
-					var property = this._data[path];
-					if (!property) {
-						log("set Path not exists:" + path);
-						return this;
-					}
-
-					property.value = value;
-					if (setAsOriginal) {
-						property.setAsOriginal();
-					}
-					return this;
-				}
-
-				var currentKey = path.substr(0, pos);
-				var newPath = path.substr(pos + 1);
-
-				if (!this._data[currentKey]) {
-					log("set deep Path not exists:" + currentKey);
-					return;
-				}
-
-				var data = this._data[currentKey].value;
-				if (!data || !data.set) {
-					return this;
-					throw new Error("Subdocument is not defined or it is not an object");
-				}
-
-				data.set(newPath, value, setAsOriginal);
-				return this;
-			}
-		},
-		setupData: {
-			value: function setupData(properties) {
-				this.set(properties, null, true);
-			}
+			Object.keys(this._data).forEach(function (key) {
+				var value = returnType ? _this2._data[key] : _this2.get(key);
+				fn(value, key);
+			});
 		}
 	}, {
-		createClass: {
-			value: function createClass(schema) {
-				var DataClass = (function (_Data) {
-					function DataClass(properties, className, mainData) {
-						_classCallCheck(this, DataClass);
+		key: 'toJSON',
+		value: function toJSON(options) {
+			var json = {};
 
-						_get(Object.getPrototypeOf(DataClass.prototype), "constructor", this).call(this, schema, properties, className, mainData);
-					}
+			options = options || {};
 
-					_inherits(DataClass, _Data);
+			for (var propName in this._data) {
+				var prop = this._data[propName];
 
-					return DataClass;
-				})(Data);
+				if (prop instanceof _typesVirtual2['default'] && options.virtuals === false) {
+					continue;
+				}
 
-				;
+				if (options.metadata === false && prop.isMetadata) {
+					continue;
+				}
 
-				//define properties
-				schema.traverse(function (fieldName) {
-					Object.defineProperty(DataClass.prototype, fieldName, {
-						enumerable: true,
-						configurable: true,
-						get: function get() {
-							return this.get(fieldName);
-						},
-						set: function set(value) {
-							return this.set(fieldName, value);
-						}
-					});
-				});
+				if (options.modified && !prop.isModified && !prop.hasDefault) {
+					continue;
+				}
+
+				json[propName] = prop.toJSON(options);
+			}
+
+			return json;
+		}
+	}, {
+		key: 'toObject',
+		value: function toObject(options) {
+			var json = {};
+
+			options = options || {};
+
+			for (var propName in this._data) {
+				var prop = this._data[propName];
+
+				if (prop instanceof _typesVirtual2['default']) {
+					continue;
+				}
+
+				if (prop.isMetadata && !options.query) {
+					continue;
+				}
+
+				if (options.modified && !prop.isModified && !prop.hasDefault) {
+					continue;
+				}
+
+				json[propName] = prop.toObject(options);
+			}
+
+			return json;
+		}
+	}, {
+		key: 'isModified',
+		value: function isModified(path) {
+			var pos = path.indexOf('.');
+			if (pos === -1) {
+				if (!this._data[path]) {
+					log('isModified Path not exists:' + path);
+					return;
+				}
+
+				return this._data[path].isModified;
+			}
+
+			var currentKey = path.substr(0, pos);
+			var newPath = path.substr(pos + 1);
+
+			if (!this._data[currentKey]) {
+				log('isModified deep Path not exists:' + currentKey);
+				return;
+			}
+
+			var data = this._data[currentKey].value;
+			if (!data || !data.get) {
+				return;
+				throw new Error('Subdocument is not defined or it is not an object');
+			}
+
+			return data.get(newPath);
+		}
+	}, {
+		key: 'get',
+		value: function get(path) {
+			var pos = path.indexOf('.');
+			if (pos === -1) {
+				if (!this._data[path]) {
+					log('get Path not exists:' + path);
+					return;
+				}
+
+				return this._data[path].value;
+			}
+
+			var currentKey = path.substr(0, pos);
+			var newPath = path.substr(pos + 1);
+
+			if (!this._data[currentKey]) {
+				log('get deep Path not exists:' + currentKey, path, newPath);
+				return;
+			}
+
+			var data = this._data[currentKey].value;
+			if (!data || !data.get) {
+				return;
+				throw new Error('Subdocument is not defined or it is not an object');
+			}
+
+			return data.get(newPath);
+		}
+	}, {
+		key: 'set',
+		value: function set(path, value, setAsOriginal) {
+			if (_lodash2['default'].isPlainObject(path)) {
+				for (var key in path) {
+					this.set(key, path[key], setAsOriginal);
+				}
+				return this;
+			}
+
+			var pos = path.indexOf('.');
+			if (pos === -1) {
+				var property = this._data[path];
+				if (!property) {
+					log('set Path not exists:' + path);
+					return this;
+				}
+
+				property.value = value;
+				if (setAsOriginal) {
+					property.setAsOriginal();
+				}
+				return this;
+			}
+
+			var currentKey = path.substr(0, pos);
+			var newPath = path.substr(pos + 1);
+
+			if (!this._data[currentKey]) {
+				log('set deep Path not exists:' + currentKey);
+				return;
+			}
+
+			var data = this._data[currentKey].value;
+			if (!data || !data.set) {
+				return this;
+				throw new Error('Subdocument is not defined or it is not an object');
+			}
+
+			data.set(newPath, value, setAsOriginal);
+			return this;
+		}
+	}, {
+		key: 'setupData',
+		value: function setupData(properties) {
+			this.set(properties, null, true);
+		}
+	}], [{
+		key: 'createClass',
+		value: function createClass(schema) {
+			var DataClass = (function (_Data) {
+				_inherits(DataClass, _Data);
+
+				function DataClass(properties, className, mainData) {
+					_classCallCheck(this, DataClass);
+
+					_get(Object.getPrototypeOf(DataClass.prototype), 'constructor', this).call(this, schema, properties, className, mainData);
+				}
 
 				return DataClass;
-			}
+			})(Data);
+
+			;
+
+			//define properties
+			schema.traverse(function (fieldName) {
+				Object.defineProperty(DataClass.prototype, fieldName, {
+					enumerable: true,
+					configurable: true,
+					get: function get() {
+						return this.get(fieldName);
+					},
+					set: function set(value) {
+						return this.set(fieldName, value);
+					}
+				});
+			});
+
+			return DataClass;
 		}
-	});
+	}]);
 
 	return Data;
 })();
 
-module.exports = Data;
+exports['default'] = Data;
+module.exports = exports['default'];

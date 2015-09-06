@@ -2,10 +2,11 @@ import { EventEmitter } from 'events';
 
 export default class Document extends EventEmitter {
 	constructor(model, properties, options) {
+        super()
 		properties = properties || {};
 
 		this._model = model;
-		this._data  = new model.schema.DataClass(properties, model.name); 
+		this._data  = new model.schema.DataClass(properties, model.name);
 
 		this._from = null;
 		this._to = null;
@@ -99,7 +100,7 @@ export default class Document extends EventEmitter {
 
 							return resolve(self);
 						}).catch(reject);
-					} 
+					}
 
 					return model.update(self, properties).exec().then((total) => {
 

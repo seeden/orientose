@@ -1,12 +1,19 @@
 "use strict";
 
-var _interopRequire = function (obj) { return obj && obj.__esModule ? obj["default"] : obj; };
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
-var keymirror = _interopRequire(require("keymirror"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
-module.exports = keymirror({
+var _keymirror = require("keymirror");
+
+var _keymirror2 = _interopRequireDefault(_keymirror);
+
+exports["default"] = (0, _keymirror2["default"])({
 	NOTUNIQUE: null, //basic index
 	UNIQUE: null, //unique index
 	FULLTEXT: null, //text index
 	DICTIONARY: null //
 });
+module.exports = exports["default"];

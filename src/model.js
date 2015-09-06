@@ -13,6 +13,7 @@ const log = debug('orientose:model');
 
 export default class Model extends EventEmitter {
 	constructor (name, schema, connection, options, callback) {
+        super()
 		if(!name) {
 			throw new Error('Model name is not defined');
 		}
@@ -49,7 +50,7 @@ export default class Model extends EventEmitter {
 				}
 
 				callback(err, model);
-			});	
+			});
 		} else {
 			// i believe it should still call
 			callback(null, this);
@@ -106,7 +107,7 @@ export default class Model extends EventEmitter {
 
 					callback(null, indexes);
 				}, callback);
-			}, 
+			},
 			//remove unused indexes
 			function(indexes, callback) {
 				if(!model.options.dropUnusedIndexes) {
@@ -160,7 +161,7 @@ export default class Model extends EventEmitter {
 					log('Creating index: ' + indexName);
 
 					var config = {
-						'class'    : className, 
+						'class'    : className,
 						name       : indexName,
 						properties : Object.keys(index.properties),
 						type       : index.type
@@ -178,7 +179,7 @@ export default class Model extends EventEmitter {
 
 					callback(null, indexes);
 				});
-			},			
+			},
 		], callback);
 	}
 
@@ -251,7 +252,7 @@ export default class Model extends EventEmitter {
 
 					waterfall([
 						//create LinkedClass for embedded documents
-						function(callback) { 
+						function(callback) {
 							if(type === 'EMBEDDED' && schemaType.isObject) {
 								var modelName = className + 'A' + _.capitalize(propName);
 
@@ -370,7 +371,7 @@ export default class Model extends EventEmitter {
 	findOne (conditions, callback) {
 		return this.createQuery({})
 			.findOne(conditions, callback);
-	}	
+	}
 
 	remove (conditions, callback) {
 		return this.createQuery({})
