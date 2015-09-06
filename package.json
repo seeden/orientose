@@ -1,6 +1,6 @@
 {
   "name": "@eskygo/orientose",
-  "version": "0.3.17",
+  "version": "0.3.18",
   "description": "OrientDB ODM with support for schemas inspired by mongoose",
   "author": {
     "name": "Zlatko Fedor",
