@@ -1,5 +1,5 @@
 {
-  "name": "@eskygo/orientose",
+  "name": "@shekhei/orientose",
   "version": "0.3.18",
   "description": "OrientDB ODM with support for schemas inspired by mongoose",
   "author": {
@@ -54,7 +54,7 @@
     "keymirror": "~0.1.1",
     "lodash": "^3.5.0",
     "node.extend": "~1.1.3",
-    "orientjs": "~2.0.0",
+    "orientjs": "~2.1.0",
     "should": "^7.1.0"
   },
   "devDependencies": {
