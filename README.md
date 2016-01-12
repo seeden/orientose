@@ -1,4 +1,4 @@
-# This package was split into two new packages named livia and livia-orientdb
+# This package was split into two new packages named [livia](https://github.com/seeden/livia) and [livia-orientdb](https://github.com/seeden/livia-orientdb)
 
 This package is not maintenance anymore.
 
