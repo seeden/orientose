@@ -1,18 +1,14 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _query = require('orientjs/lib/db/query');
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _orientjsLibDbQuery = require('orientjs/lib/db/query');
-
-var _orientjsLibDbQuery2 = _interopRequireDefault(_orientjsLibDbQuery);
+var _query2 = _interopRequireDefault(_query);
 
 var _debug = require('debug');
 
@@ -26,33 +22,37 @@ var _document = require('./document');
 
 var _document2 = _interopRequireDefault(_document);
 
-var _schemasGraph = require('./schemas/graph');
+var _graph = require('./schemas/graph');
 
-var _schemasGraph2 = _interopRequireDefault(_schemasGraph);
+var _graph2 = _interopRequireDefault(_graph);
 
-var _schemasEdge = require('./schemas/edge');
+var _edge = require('./schemas/edge');
 
-var _schemasEdge2 = _interopRequireDefault(_schemasEdge);
+var _edge2 = _interopRequireDefault(_edge);
 
 var _orientjs = require('orientjs');
 
-var _constantsLogicoperators = require('./constants/logicoperators');
+var _logicoperators = require('./constants/logicoperators');
 
-var _constantsLogicoperators2 = _interopRequireDefault(_constantsLogicoperators);
+var _logicoperators2 = _interopRequireDefault(_logicoperators);
 
-var _constantsComparisonoperators = require('./constants/comparisonoperators');
+var _comparisonoperators = require('./constants/comparisonoperators');
 
-var _constantsComparisonoperators2 = _interopRequireDefault(_constantsComparisonoperators);
+var _comparisonoperators2 = _interopRequireDefault(_comparisonoperators);
 
-var _nodeExtend = require("node.extend");
+var _node = require('node.extend');
 
-var _nodeExtend2 = _interopRequireDefault(_nodeExtend);
+var _node2 = _interopRequireDefault(_node);
 
 var _bluebird = require('bluebird');
 
 var _bluebird2 = _interopRequireDefault(_bluebird);
 
-var log = (0, _debug2['default'])('orientose:query');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var log = (0, _debug2.default)('orientose:query');
 
 var Operation = {
 	DELETE: 'DELETE',
@@ -69,7 +69,7 @@ var Operator = {
 
 var rRIDLike = /^[\d]+:[\d]+$/;
 
-var Query = (function () {
+var Query = function () {
 	function Query(model, options) {
 		_classCallCheck(this, Query);
 
@@ -108,11 +108,11 @@ var Query = (function () {
 		this._set = null;
 		var self = this;
 		for (var name in this._model._documentClass) {
-			this[name] = (function (name) {
+			this[name] = function (name) {
 				return function () {
 					return self._model._documentClass[name].apply(self, arguments);
 				};
-			})(name);
+			}(name);
 		}
 	}
 
@@ -146,7 +146,7 @@ var Query = (function () {
 		key: 'addParams',
 		value: function addParams(params) {
 			params = params || {};
-			(0, _nodeExtend2['default'])(this._params, params);
+			(0, _node2.default)(this._params, params);
 		}
 	}, {
 		key: 'createComparisonQuery',
@@ -222,7 +222,7 @@ var Query = (function () {
 					return;
 				}
 
-				if (_constantsLogicoperators2['default'][propertyName]) {
+				if (_logicoperators2.default[propertyName]) {
 					var subQueries = [];
 
 					value.forEach(function (conditions) {
@@ -240,7 +240,7 @@ var Query = (function () {
 						return items.push(subQueries[0]);
 					}
 
-					var query = '(' + subQueries.join(') ' + _constantsLogicoperators2['default'][propertyName] + ' (') + ')';
+					var query = '(' + subQueries.join(') ' + _logicoperators2.default[propertyName] + ' (') + ')';
 					return items.push(query);
 				}
 
@@ -248,7 +248,7 @@ var Query = (function () {
 				// value = value.toString();
 				// }
 
-				if (!_lodash2['default'].isObject(value) || value instanceof _orientjs.RecordID) {
+				if (!_lodash2.default.isObject(value) || value instanceof _orientjs.RecordID) {
 					var query = _this.createComparisonQuery(propertyName, '=', value);
 					return items.push(query);
 				}
@@ -260,8 +260,8 @@ var Query = (function () {
 					// }
 
 					var query = null;
-					if (_constantsComparisonoperators2['default'][operation]) {
-						query = _this.createComparisonQuery(propertyName, _constantsComparisonoperators2['default'][operation], operationValue);
+					if (_comparisonoperators2.default[operation]) {
+						query = _this.createComparisonQuery(propertyName, _comparisonoperators2.default[operation], operationValue);
 					}
 
 					if (!query) {
@@ -307,8 +307,8 @@ var Query = (function () {
 				conditions = void 0;
 			}
 
-			if (_lodash2['default'].isObject(conditions)) {
-				if (conditions instanceof _document2['default']) {
+			if (_lodash2.default.isObject(conditions)) {
+				if (conditions instanceof _document2.default) {
 					this._target = conditions;
 					conditions = void 0;
 				} else if (conditions instanceof _orientjs.RecordID) {
@@ -440,10 +440,10 @@ var Query = (function () {
 			this._sort = _sort;
 			return this;
 		}
-
 		/**
   update(doc, [callback])
   */
+
 	}, {
 		key: 'create',
 		value: function create(doc, callback) {
@@ -457,6 +457,7 @@ var Query = (function () {
 		/**
   update(conditions, update, [options], [callback])
   */
+
 	}, {
 		key: 'update',
 		value: function update(conditions, doc, options) {
@@ -474,6 +475,7 @@ var Query = (function () {
 		}
 
 		//find([conditions], [callback])
+
 	}, {
 		key: 'find',
 		value: function find(conditions) {
@@ -481,6 +483,7 @@ var Query = (function () {
 		}
 
 		//findOne([criteria], [callback])
+
 	}, {
 		key: 'findOne',
 		value: function findOne(conditions) {
@@ -488,6 +491,7 @@ var Query = (function () {
 		}
 
 		//remove([conditions], [callback])
+
 	}, {
 		key: 'remove',
 		value: function remove(conditions) {
@@ -528,13 +532,13 @@ var Query = (function () {
 			if (this._transaction) {
 				query = this._transaction;
 			} else {
-				query = new _orientjsLibDbQuery2['default'](model.connection.db);
+				query = new _query2.default(model.connection.db);
 			}
 			var q = query;
 
 			var target = this._target && this._target['@rid'] ? this._target['@rid'] : this._target;
 
-			var isGraph = schema instanceof _schemasGraph2['default'];
+			var isGraph = schema instanceof _graph2.default;
 			var selects;
 			if (this._selects.length > 0) {
 				this._selects.push("@version");
@@ -543,12 +547,12 @@ var Query = (function () {
 				selects = "*, @version";
 			}
 			if (isGraph) {
-				var graphType = schema instanceof _schemasEdge2['default'] ? 'EDGE' : 'VERTEX';
+				var graphType = schema instanceof _edge2.default ? 'EDGE' : 'VERTEX';
 
 				if (operation === Operation.INSERT) {
 					query = query.create(graphType, target);
 				} else if (operation === Operation.DELETE) {
-					query = query['delete'](graphType, target);
+					query = query.delete(graphType, target);
 				} else if (operation === Operation.SELECT) {
 					query = query.select(selects).from(target);
 				} else {
@@ -558,7 +562,7 @@ var Query = (function () {
 				if (operation === Operation.INSERT) {
 					query = query.insert().into(target);
 				} else if (operation === Operation.DELETE) {
-					query = query['delete']().from(target);
+					query = query.delete().from(target);
 				} else if (operation === Operation.SELECT) {
 					query = query.select(selects).from(target);
 				} else {
@@ -574,7 +578,7 @@ var Query = (function () {
 				query.to(this._to && this._to['@rid'] ? this._to['@rid'] : this._to);
 			}
 
-			if (this._set) {
+			if (this._set && Object.keys(this._set).length) {
 				query.set(this._set);
 			}
 
@@ -583,7 +587,7 @@ var Query = (function () {
 			});
 
 			for (var name in this._let) {
-				query = query['let'](name, this._let[name]);
+				query = query.let(name, this._let[name]);
 			}
 
 			query.addParams(this._params);
@@ -621,7 +625,7 @@ var Query = (function () {
 
 			var promise = query.exec().then(function (results) {
 				if (!results) {
-					return _bluebird2['default'].resolve(results);
+					return _bluebird2.default.resolve(results);
 				}
 
 				if (_this2._first) {
@@ -631,7 +635,7 @@ var Query = (function () {
 				if (_this2._scalar && results.length) {
 					results = parseInt(results[0]);
 				}
-				return _bluebird2['default'].resolve(results);
+				return _bluebird2.default.resolve(results);
 			});
 			if (fn) {
 				return promise.then(fn);
@@ -651,7 +655,6 @@ var Query = (function () {
 	}]);
 
 	return Query;
-})();
+}();
 
-exports['default'] = Query;
-module.exports = exports['default'];
+exports.default = Query;

@@ -514,7 +514,7 @@ export default class Query {
 			query.to(this._to && this._to['@rid'] ? this._to['@rid'] : this._to);
 		}
 
-		if(this._set) {
+		if(this._set && Object.keys(this._set).length) {
 			query.set(this._set);
 		}
 

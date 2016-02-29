@@ -1,35 +1,37 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _events = require('events');
 
-var Document = (function (_EventEmitter) {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Document = function (_EventEmitter) {
 	_inherits(Document, _EventEmitter);
 
 	function Document(model, properties, options) {
 		_classCallCheck(this, Document);
 
-		_get(Object.getPrototypeOf(Document.prototype), 'constructor', this).call(this);
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Document).call(this));
+
 		properties = properties || {};
 
-		this._model = model;
-		this._data = new model.schema.DataClass(properties, model.name);
+		_this._model = model;
+		_this._data = new model.schema.DataClass(properties, model.name);
 
-		this._from = null;
-		this._to = null;
+		_this._from = null;
+		_this._to = null;
 
-		this._isNew = true;
+		_this._isNew = true;
+		return _this;
 	}
 
 	_createClass(Document, [{
@@ -125,14 +127,14 @@ var Document = (function (_EventEmitter) {
 								}));
 
 								return resolve(self);
-							})['catch'](reject);
+							}).catch(reject);
 						}
 
 						return model.update(self, properties).exec().then(function (total) {
 
 							self.setupData(properties);
 							return resolve(self);
-						})['catch'](reject);
+						}).catch(reject);
 					});
 				});
 			});
@@ -155,7 +157,7 @@ var Document = (function (_EventEmitter) {
 
 					model.remove(self, true).then(function (result) {
 						resolve(result);
-					})['catch'](reject);
+					}).catch(reject);
 				});
 			});
 		}
@@ -167,7 +169,7 @@ var Document = (function (_EventEmitter) {
 	}], [{
 		key: 'let',
 		value: function _let(name, statement) {
-			return this._model['let'](name, statement);
+			return this._model.let(name, statement);
 		}
 	}, {
 		key: 'exec',
@@ -217,13 +219,13 @@ var Document = (function (_EventEmitter) {
 	}, {
 		key: 'createClass',
 		value: function createClass(_model) {
-			var DocumentModel = (function (_Document) {
+			var DocumentModel = function (_Document) {
 				_inherits(DocumentModel, _Document);
 
 				function DocumentModel(properties) {
 					_classCallCheck(this, DocumentModel);
 
-					_get(Object.getPrototypeOf(DocumentModel.prototype), 'constructor', this).call(this, _model, properties);
+					return _possibleConstructorReturn(this, Object.getPrototypeOf(DocumentModel).call(this, _model, properties));
 				}
 
 				_createClass(DocumentModel, null, [{
@@ -244,7 +246,7 @@ var Document = (function (_EventEmitter) {
 				}]);
 
 				return DocumentModel;
-			})(Document);
+			}(Document);
 
 			;
 
@@ -282,7 +284,6 @@ var Document = (function (_EventEmitter) {
 	}]);
 
 	return Document;
-})(_events.EventEmitter);
+}(_events.EventEmitter);
 
-exports['default'] = Document;
-module.exports = exports['default'];
+exports.default = Document;

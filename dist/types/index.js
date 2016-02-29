@@ -1,10 +1,8 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 var _boolean = require('./boolean');
 
@@ -46,16 +44,17 @@ var _date = require('./date');
 
 var _date2 = _interopRequireDefault(_date);
 
-exports['default'] = {
-	'Boolean': _boolean2['default'],
-	'Integer': _integer2['default'],
-	'Long': _long2['default'],
-	'String': _string2['default'],
-	'Number': _number2['default'],
-	EmbeddedList: _array2['default'],
-	Mixed: _mixed2['default'],
-	Rid: _rid2['default'],
-	'Date': _date2['default'],
-	Embedded: _object2['default']
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+	'Boolean': _boolean2.default,
+	'Integer': _integer2.default,
+	'Long': _long2.default,
+	'String': _string2.default,
+	'Number': _number2.default,
+	EmbeddedList: _array2.default,
+	Mixed: _mixed2.default,
+	Rid: _rid2.default,
+	'Date': _date2.default,
+	Embedded: _object2.default
 };
-module.exports = exports['default'];

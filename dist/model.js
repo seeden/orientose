@@ -1,24 +1,16 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _events = require('events');
 
-var _schemasIndex = require('./schemas/index');
+var _index = require('./schemas/index');
 
-var _schemasIndex2 = _interopRequireDefault(_schemasIndex);
+var _index2 = _interopRequireDefault(_index);
 
 var _document = require('./document');
 
@@ -26,17 +18,17 @@ var _document2 = _interopRequireDefault(_document);
 
 var _async = require('async');
 
-var _typesConvert = require('./types/convert');
+var _convert = require('./types/convert');
 
-var _typesConvert2 = _interopRequireDefault(_typesConvert);
+var _convert2 = _interopRequireDefault(_convert);
 
-var _typesRid = require('./types/rid');
+var _rid = require('./types/rid');
 
-var _typesRid2 = _interopRequireDefault(_typesRid);
+var _rid2 = _interopRequireDefault(_rid);
 
-var _nodeExtend = require('node.extend');
+var _node = require('node.extend');
 
-var _nodeExtend2 = _interopRequireDefault(_nodeExtend);
+var _node2 = _interopRequireDefault(_node);
 
 var _debug = require('debug');
 
@@ -50,22 +42,29 @@ var _query = require('./query');
 
 var _query2 = _interopRequireDefault(_query);
 
-var log = (0, _debug2['default'])('orientose:model');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Model = (function (_EventEmitter) {
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var log = (0, _debug2.default)('orientose:model');
+
+var Model = function (_EventEmitter) {
 	_inherits(Model, _EventEmitter);
 
 	function Model(name, schema, connection, options, callback) {
-		var _this = this;
-
 		_classCallCheck(this, Model);
 
-		_get(Object.getPrototypeOf(Model.prototype), 'constructor', this).call(this);
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Model).call(this));
+
 		if (!name) {
 			throw new Error('Model name is not defined');
 		}
 
-		if (!schema instanceof _schemasIndex2['default']) {
+		if (!schema instanceof _index2.default) {
 			throw new Error('This is not a schema');
 		}
 
@@ -83,15 +82,15 @@ var Model = (function (_EventEmitter) {
 
 		callback = callback || function () {};
 
-		this._name = name;
-		this._schema = schema;
-		this._connection = connection;
-		this._options = options || {};
+		_this._name = name;
+		_this._schema = schema;
+		_this._connection = connection;
+		_this._options = options || {};
 
-		this._documentClass = _document2['default'].createClass(this);
+		_this._documentClass = _document2.default.createClass(_this);
 
 		if (options.ensure !== false) {
-			this._ensureClass(function (err, model) {
+			_this._ensureClass(function (err, model) {
 				if (err) {
 					log('Model ' + _this.name + ': ' + err.message);
 				}
@@ -100,8 +99,9 @@ var Model = (function (_EventEmitter) {
 			});
 		} else {
 			// i believe it should still call
-			callback(null, this);
+			callback(null, _this);
 		}
+		return _this;
 	}
 
 	_createClass(Model, [{
@@ -143,6 +143,7 @@ var Model = (function (_EventEmitter) {
 					var definition = index.definition;
 					var type = index.type;
 					var name = index.name;
+
 
 					var schemaIndexName = name;
 					var indexStartName = className + '.';
@@ -222,10 +223,10 @@ var Model = (function (_EventEmitter) {
 			(0, _async.waterfall)([
 			//prepare base class
 			function (callback) {
-				db['class'].get(className).then(function (OClass) {
+				db.class.get(className).then(function (OClass) {
 					callback(null, OClass);
 				}, function (err) {
-					db['class'].create(className, schema.extendClassName, model.options.cluster, model.options.abstract).then(function (OClass) {
+					db.class.create(className, schema.extendClassName, model.options.cluster, model.options.abstract).then(function (OClass) {
 						callback(null, OClass);
 					}, callback);
 				});
@@ -283,7 +284,7 @@ var Model = (function (_EventEmitter) {
 					//create LinkedClass for embedded documents
 					function (callback) {
 						if (type === 'EMBEDDED' && schemaType.isObject) {
-							var modelName = className + 'A' + _lodash2['default'].capitalize(propName);
+							var modelName = className + 'A' + _lodash2.default.capitalize(propName);
 
 							return new Model(modelName, schemaProp.type, model.connection, {
 								abstract: true
@@ -291,7 +292,7 @@ var Model = (function (_EventEmitter) {
 						} else if (type === 'EMBEDDEDLIST' && schemaType.isArray && schemaProp.item) {
 							var item = schemaProp.item;
 							if (item.schemaType.isObject) {
-								var modelName = className + 'A' + _lodash2['default'].capitalize(propName);
+								var modelName = className + 'A' + _lodash2.default.capitalize(propName);
 
 								return new Model(modelName, item.type, model.connection, {
 									abstract: true
@@ -315,7 +316,7 @@ var Model = (function (_EventEmitter) {
 						};
 
 						var additionalConfig = schemaType.getPropertyConfig(schemaProp);
-						(0, _nodeExtend2['default'])(config, additionalConfig);
+						(0, _node2.default)(config, additionalConfig);
 
 						if (model) {
 							if (config.linkedType) {
@@ -370,12 +371,12 @@ var Model = (function (_EventEmitter) {
 	}, {
 		key: 'createQuery',
 		value: function createQuery(options) {
-			return new _query2['default'](this, options);
+			return new _query2.default(this, options);
 		}
 	}, {
 		key: 'let',
 		value: function _let(name, statement) {
-			return this.createQuery({})['let'](name, statement);
+			return this.createQuery({}).let(name, statement);
 		}
 	}, {
 		key: 'where',
@@ -446,7 +447,6 @@ var Model = (function (_EventEmitter) {
 	}]);
 
 	return Model;
-})(_events.EventEmitter);
+}(_events.EventEmitter);
 
-exports['default'] = Model;
-module.exports = exports['default'];
+exports.default = Model;

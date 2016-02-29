@@ -1,20 +1,10 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _events = require('events');
 
@@ -26,9 +16,9 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _typesVirtual = require('../types/virtual');
+var _virtual = require('../types/virtual');
 
-var _typesVirtual2 = _interopRequireDefault(_typesVirtual);
+var _virtual2 = _interopRequireDefault(_virtual);
 
 var _data = require('../data');
 
@@ -38,61 +28,72 @@ var _types = require('../types');
 
 var _types2 = _interopRequireDefault(_types);
 
-var _typesConvert = require('../types/convert');
+var _convert = require('../types/convert');
 
-var _typesConvert2 = _interopRequireDefault(_typesConvert);
+var _convert2 = _interopRequireDefault(_convert);
 
-var _typesMixed = require('../types/mixed');
+var _mixed = require('../types/mixed');
 
-var _typesMixed2 = _interopRequireDefault(_typesMixed);
+var _mixed2 = _interopRequireDefault(_mixed);
 
-var _constantsIndextype = require('../constants/indextype');
+var _indextype = require('../constants/indextype');
 
-var _constantsIndextype2 = _interopRequireDefault(_constantsIndextype);
+var _indextype2 = _interopRequireDefault(_indextype);
 
 var _debug = require('debug');
 
 var _debug2 = _interopRequireDefault(_debug);
 
-var log = (0, _debug2['default'])('orientose:schema');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Schema = (function (_EventEmitter) {
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var log = (0, _debug2.default)('orientose:schema');
+
+var Schema = function (_EventEmitter) {
 	_inherits(Schema, _EventEmitter);
 
 	function Schema(props, options) {
 		_classCallCheck(this, Schema);
 
-		_get(Object.getPrototypeOf(Schema.prototype), 'constructor', this).call(this);
+		var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Schema).call(this));
 
 		props = props || {};
 
-		this.methods = {};
-		this.statics = {};
+		_this.methods = {};
+		_this.statics = {};
 
-		this._props = {};
-		this._options = options || {};
+		_this._props = {};
+		_this._options = options || {};
 
-		this._paths = {};
-		this._indexes = {};
-		this._virtuals = {};
-		this._hooks = new _kareem2['default']();
+		_this._paths = {};
+		_this._indexes = {};
+		_this._virtuals = {};
+		_this._hooks = new _kareem2.default();
 
-		this._dataClass = null;
+		_this._dataClass = null;
 
-		this.add(props);
+		_this.add(props);
+		return _this;
 	}
 
 	_createClass(Schema, [{
 		key: 'add',
 		value: function add(props) {
-			var _this = this;
+			var _this2 = this;
 
-			if (!_lodash2['default'].isObject(props)) {
+			if (!_lodash2.default.isObject(props)) {
 				throw new Error('Props is not an object');
 			}
 
 			Object.keys(props).forEach(function (propName) {
-				return _this.setPath(propName, props[propName]);
+				return _this2.setPath(propName, props[propName]);
 			});
 			return this;
 		}
@@ -120,11 +121,11 @@ var Schema = (function (_EventEmitter) {
 			}
 
 			var name = options.name || this._indexName(properties);
-			var type = options.type || _constantsIndextype2['default'].NOTUNIQUE;
+			var type = options.type || _indextype2.default.NOTUNIQUE;
 			if (options.unique) {
-				type = _constantsIndextype2['default'].UNIQUE;
+				type = _indextype2.default.UNIQUE;
 			} else if (options.text) {
-				type = _constantsIndextype2['default'].FULLTEXT;
+				type = _indextype2.default.FULLTEXT;
 			}
 
 			if (this._indexes[name]) {
@@ -265,7 +266,7 @@ var Schema = (function (_EventEmitter) {
 	}, {
 		key: 'method',
 		value: function method(name, fn) {
-			if (_lodash2['default'].isObject(name)) {
+			if (_lodash2.default.isObject(name)) {
 				for (var index in name) {
 					this.methods[index] = name[index];
 				}
@@ -278,7 +279,7 @@ var Schema = (function (_EventEmitter) {
 	}, {
 		key: 'static',
 		value: function _static(name, fn) {
-			if (_lodash2['default'].isObject(name)) {
+			if (_lodash2.default.isObject(name)) {
 				for (var index in name) {
 					this.statics[index] = name[index];
 				}
@@ -318,7 +319,7 @@ var Schema = (function (_EventEmitter) {
 			}
 
 			var virtual = this._virtuals[path] = {
-				schemaType: _typesVirtual2['default'],
+				schemaType: _virtual2.default,
 				options: options,
 				getset: {
 					get: function get(fn) {
@@ -368,11 +369,7 @@ var Schema = (function (_EventEmitter) {
 	}, {
 		key: 'path',
 		value: function path(_path) {
-			for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-				args[_key - 1] = arguments[_key];
-			}
-
-			if (args.length === 0) {
+			if (arguments.length - 1 === 0) {
 				var prop = this.getPath(_path, true);
 				if (!prop) {
 					return prop;
@@ -381,7 +378,7 @@ var Schema = (function (_EventEmitter) {
 				return Schema.toMongoose(prop, _path);
 			}
 
-			this.setPath(_path, args[0]);
+			this.setPath(_path, arguments.length <= 1 ? undefined : arguments[1]);
 			return this;
 		}
 	}, {
@@ -454,21 +451,21 @@ var Schema = (function (_EventEmitter) {
 			}
 
 			//if it is one of our types
-			if (_lodash2['default'].isFunction(options)) {
+			if (_lodash2.default.isFunction(options)) {
 				options = {
 					type: options
 				};
 			}
 
 			//1. convert objects
-			if (_lodash2['default'].isPlainObject(options) && (!options.type || options.type.type)) {
+			if (_lodash2.default.isPlainObject(options) && (!options.type || options.type.type)) {
 				options = {
 					type: options
 				};
 			}
 
 			//2. prepare array
-			if (_lodash2['default'].isArray(options)) {
+			if (_lodash2.default.isArray(options)) {
 				options = {
 					type: options
 				};
@@ -478,16 +475,16 @@ var Schema = (function (_EventEmitter) {
 			var SubSchema = this.getSubdocumentSchemaConstructor();
 
 			//create schema from plain object
-			if (_lodash2['default'].isPlainObject(type)) {
-				type = Object.keys(type).length ? new SubSchema(type) : _typesMixed2['default'];
+			if (_lodash2.default.isPlainObject(type)) {
+				type = Object.keys(type).length ? new SubSchema(type) : _mixed2.default;
 			}
 
-			if (_lodash2['default'].isString(type)) {
+			if (_lodash2.default.isString(type)) {
 				var ttype = type.toLowerCase();
-				for (var name in _types2['default']) {
+				for (var name in _types2.default) {
 					var tname = name.toLowerCase();
 					if (ttype === tname) {
-						type = _types2['default'][name];
+						type = _types2.default[name];
 						break;
 					}
 				}
@@ -496,12 +493,12 @@ var Schema = (function (_EventEmitter) {
 			var normalised = {
 				schema: this,
 				type: type,
-				schemaType: (0, _typesConvert2['default'])(type),
+				schemaType: (0, _convert2.default)(type),
 				options: options
 			};
 
-			if (_lodash2['default'].isArray(type)) {
-				var itemOptions = type.length ? type[0] : { type: _typesMixed2['default'] };
+			if (_lodash2.default.isArray(type)) {
+				var itemOptions = type.length ? type[0] : { type: _mixed2.default };
 				normalised.item = this.normalizeOptions(itemOptions);
 			}
 
@@ -526,7 +523,7 @@ var Schema = (function (_EventEmitter) {
 		key: 'DataClass',
 		get: function get() {
 			if (!this._dataClass) {
-				this._dataClass = _data2['default'].createClass(this);
+				this._dataClass = _data2.default.createClass(this);
 			}
 			return this._dataClass;
 		}
@@ -555,7 +552,7 @@ var Schema = (function (_EventEmitter) {
 				setters: [],
 				getters: [],
 				options: options,
-				defaultValue: options['default']
+				defaultValue: options.default
 			};
 
 			if (prop.item) {
@@ -569,7 +566,6 @@ var Schema = (function (_EventEmitter) {
 	}]);
 
 	return Schema;
-})(_events.EventEmitter);
+}(_events.EventEmitter);
 
-exports['default'] = Schema;
-module.exports = exports['default'];
+exports.default = Schema;

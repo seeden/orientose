@@ -1,38 +1,38 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+var _index = require('./schemas/index');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var _schemasIndex = require('./schemas/index');
-
-var _schemasIndex2 = _interopRequireDefault(_schemasIndex);
+var _index2 = _interopRequireDefault(_index);
 
 var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-var _typesVirtual = require('./types/virtual');
+var _virtual = require('./types/virtual');
 
-var _typesVirtual2 = _interopRequireDefault(_typesVirtual);
+var _virtual2 = _interopRequireDefault(_virtual);
 
 var _debug = require('debug');
 
 var _debug2 = _interopRequireDefault(_debug);
 
-var log = (0, _debug2['default'])('orientose:data');
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var Data = (function () {
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var log = (0, _debug2.default)('orientose:data');
+
+var Data = function () {
 	function Data(schema, properties, className, mainData) {
 		var _this = this;
 
@@ -78,7 +78,7 @@ var Data = (function () {
 			for (var propName in this._data) {
 				var prop = this._data[propName];
 
-				if (prop instanceof _typesVirtual2['default'] && options.virtuals === false) {
+				if (prop instanceof _virtual2.default && options.virtuals === false) {
 					continue;
 				}
 
@@ -105,7 +105,7 @@ var Data = (function () {
 			for (var propName in this._data) {
 				var prop = this._data[propName];
 
-				if (prop instanceof _typesVirtual2['default']) {
+				if (prop instanceof _virtual2.default) {
 					continue;
 				}
 
@@ -183,7 +183,7 @@ var Data = (function () {
 	}, {
 		key: 'set',
 		value: function set(path, value, setAsOriginal) {
-			if (_lodash2['default'].isPlainObject(path)) {
+			if (_lodash2.default.isPlainObject(path)) {
 				for (var key in path) {
 					this.set(key, path[key], setAsOriginal);
 				}
@@ -230,17 +230,17 @@ var Data = (function () {
 	}], [{
 		key: 'createClass',
 		value: function createClass(schema) {
-			var DataClass = (function (_Data) {
+			var DataClass = function (_Data) {
 				_inherits(DataClass, _Data);
 
 				function DataClass(properties, className, mainData) {
 					_classCallCheck(this, DataClass);
 
-					_get(Object.getPrototypeOf(DataClass.prototype), 'constructor', this).call(this, schema, properties, className, mainData);
+					return _possibleConstructorReturn(this, Object.getPrototypeOf(DataClass).call(this, schema, properties, className, mainData));
 				}
 
 				return DataClass;
-			})(Data);
+			}(Data);
 
 			;
 
@@ -263,7 +263,6 @@ var Data = (function () {
 	}]);
 
 	return Data;
-})();
+}();
 
-exports['default'] = Data;
-module.exports = exports['default'];
+exports.default = Data;

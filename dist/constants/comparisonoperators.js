@@ -1,9 +1,9 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports['default'] = {
+exports.default = {
 	'$in': 'IN',
 	'in': 'IN',
 	'$nin': 'NOT IN',
@@ -18,4 +18,3 @@ exports['default'] = {
 	'between': 'between',
 	'BETWEEN': 'between'
 };
-module.exports = exports['default'];

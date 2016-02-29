@@ -1,10 +1,30 @@
 'use strict';
 
-Object.defineProperty(exports, '__esModule', {
+Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+exports.default = function (type) {
+	if (!type) {
+		throw new Error('Type is not defined');
+	} else if (type.isSchemaType) {
+		return type;
+	} else if (type.isSchema) {
+		return _object2.default;
+	} else if (_lodash2.default.isArray(type)) {
+		return _array2.default;
+	} else if (type === String) {
+		return _string2.default;
+	} else if (type === Number) {
+		return _number2.default;
+	} else if (type === Boolean) {
+		return _boolean2.default;
+	} else if (type === Date) {
+		return _date2.default;
+	}
+
+	throw new Error('Unrecognized type');
+};
 
 var _type = require('./type');
 
@@ -38,26 +58,4 @@ var _lodash = require('lodash');
 
 var _lodash2 = _interopRequireDefault(_lodash);
 
-exports['default'] = function (type) {
-	if (!type) {
-		throw new Error('Type is not defined');
-	} else if (type.isSchemaType) {
-		return type;
-	} else if (type.isSchema) {
-		return _object2['default'];
-	} else if (_lodash2['default'].isArray(type)) {
-		return _array2['default'];
-	} else if (type === String) {
-		return _string2['default'];
-	} else if (type === Number) {
-		return _number2['default'];
-	} else if (type === Boolean) {
-		return _boolean2['default'];
-	} else if (type === Date) {
-		return _date2['default'];
-	}
-
-	throw new Error('Unrecognized type');
-};
-
-module.exports = exports['default'];
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
