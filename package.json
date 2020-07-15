@@ -43,7 +43,7 @@
 		"oriento": "codemix/oriento#21d97a2f75ca2fbe58d6632426e64c3d553afc8c",
 		"kareem": "~1.0.0",
 		"events": "~1.0.2",
-		"lodash": "~3.5.0",
+		"lodash": "~4.17.19",
 		"node.extend": "~1.1.3",
 		"keymirror": "~0.1.1",
 		"async": "~0.9.0",
